@@ -142,7 +142,7 @@ export default function Page() {
 						<Attribute
 							isCopyable
 							name="Domain"
-							value={`${machine.givenName}.${machine.user.name}.${magic}`}
+							value={`${machine.givenName}.${magic}`}
 						/>
 						)
 					: undefined}
