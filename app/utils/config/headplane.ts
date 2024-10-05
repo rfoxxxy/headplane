@@ -6,6 +6,7 @@
 import { access, constants, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
+import * as dotenv from 'dotenv'
 import { parse } from 'yaml'
 
 import { IntegrationFactory, loadIntegration } from '~/integration'
@@ -38,6 +39,8 @@ export async function loadContext(): Promise<HeadplaneContext> {
 	if (context) {
 		return context
 	}
+
+	dotenv.config()
 
 	const debug = process.env.DEBUG === 'true'
 	if (debug) {
