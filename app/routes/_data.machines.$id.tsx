@@ -56,6 +56,7 @@ export default function Page() {
 
 	const expired = machine.expiry === '0001-01-01 00:00:00'
 		|| machine.expiry === '0001-01-01T00:00:00Z'
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		|| machine.expiry === null
 		? false
 		: new Date(machine.expiry).getTime() < Date.now()
@@ -135,7 +136,8 @@ export default function Page() {
 				/>
 				<Attribute
 					name="Expiry"
-					value={new Date(machine.expiry).toLocaleString()}
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+					value={machine.expiry === '0001-01-01 00:00:00' || machine.expiry === '0001-01-01T00:00:00Z' || machine.expiry === null ? 'Never' : new Date(machine.expiry).toLocaleString()}
 				/>
 				{magic
 					? (

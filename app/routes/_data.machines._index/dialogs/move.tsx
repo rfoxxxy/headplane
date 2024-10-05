@@ -51,21 +51,21 @@ export default function Move({ machine, state, magic, users }: MoveProps) {
 								))}
 							</Select>
 							{magic ?
-							(
-								(
-									<p className="text-sm text-gray-500 dark:text-gray-300 leading-tight">
-										This machine is accessible by the hostname
-										{' '}
-										<Code className="text-sm">
-											{machine.givenName}
-											.
-											{magic}
-										</Code>
-										.
-									</p>
-								)
-							)
-							: undefined}
+									(
+										(
+											<p className="text-sm text-gray-500 dark:text-gray-300 leading-tight">
+												This machine is accessible by the hostname
+												{' '}
+												<Code className="text-sm">
+													{machine.givenName}
+													.
+													{magic}
+												</Code>
+												.
+											</p>
+										)
+									)
+								: undefined}
 							<div className="mt-6 flex justify-end gap-2 mt-6">
 								<Dialog.Action
 									variant="cancel"

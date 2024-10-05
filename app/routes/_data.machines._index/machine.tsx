@@ -19,11 +19,12 @@ interface Props {
 export default function MachineRow({ machine, routes, magic, users }: Props) {
 	const expired = machine.expiry === '0001-01-01 00:00:00'
 		|| machine.expiry === '0001-01-01T00:00:00Z'
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		|| machine.expiry === null
 		? false
 		: new Date(machine.expiry).getTime() < Date.now()
 
-	const tags = [
+	let tags = [
 		...machine.forcedTags,
 		...machine.validTags,
 	]
@@ -32,7 +33,9 @@ export default function MachineRow({ machine, routes, magic, users }: Props) {
 		tags.unshift('Expired')
 	}
 
-	let prefix = magic?.startsWith('[user]')
+	tags = [...new Set(tags)]
+
+	const prefix = magic?.startsWith('[user]')
 		? magic.replace('[user]', machine.user.name)
 		: magic
 
