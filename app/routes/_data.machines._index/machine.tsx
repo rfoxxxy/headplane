@@ -19,6 +19,7 @@ interface Props {
 export default function MachineRow({ machine, routes, magic, users }: Props) {
 	const expired = machine.expiry === '0001-01-01 00:00:00'
 		|| machine.expiry === '0001-01-01T00:00:00Z'
+		|| machine.expiry === null
 		? false
 		: new Date(machine.expiry).getTime() < Date.now()
 
