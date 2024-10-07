@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { CheckCircleIcon, NoEntryIcon } from '@primer/octicons-react'
 import { ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 
@@ -61,7 +62,7 @@ export default function Page() {
 		? false
 		: new Date(machine.expiry).getTime() < Date.now()
 
-	const tags = [
+	let tags = [
 		...machine.forcedTags,
 		...machine.validTags,
 	]
@@ -69,6 +70,8 @@ export default function Page() {
 	if (expired) {
 		tags.unshift('Expired')
 	}
+
+	tags = [...new Set(tags)]
 
 	return (
 		<div>
@@ -118,9 +121,9 @@ export default function Page() {
 			</h2>
 			<Card variant="flat" className="w-full max-w-full">
 				<Attribute name="Creator" value={machine.user.name} />
-				<Attribute name="Node ID" value={machine.id} />
-				<Attribute name="Node Name" value={machine.givenName} />
-				<Attribute name="Hostname" value={machine.name} />
+				<Attribute name="Machine Name" value={machine.givenName} />
+				<Attribute isCopyable name="Hostname" value={machine.name} />
+				<Attribute name="ID" value={machine.id} />
 				<Attribute
 					isCopyable
 					name="Node Key"
@@ -135,9 +138,9 @@ export default function Page() {
 					value={new Date(machine.lastSeen).toLocaleString()}
 				/>
 				<Attribute
-					name="Expiry"
+					name="Key expiry"
 					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-					value={machine.expiry === '0001-01-01 00:00:00' || machine.expiry === '0001-01-01T00:00:00Z' || machine.expiry === null ? 'Never' : new Date(machine.expiry).toLocaleString()}
+					value={machine.expiry === '0001-01-01 00:00:00' || machine.expiry === '0001-01-01T00:00:00Z' || machine.expiry === null ? 'No expiry' : new Date(machine.expiry).toLocaleString()}
 				/>
 				{magic
 					? (
@@ -148,12 +151,69 @@ export default function Page() {
 						/>
 						)
 					: undefined}
+				<Attribute
+					isCopyable
+					name="Tailscale IPv4"
+					value={machine.ipAddresses[0]}
+				/>
+				{machine.ipAddresses.length > 1
+					? (
+						<Attribute
+							isCopyable
+							name="Tailscale IPv6"
+							value={machine.ipAddresses[1]}
+						/>
+						)
+					: undefined}
 			</Card>
-			<h2 className="text-xl font-medium mb-4 mt-8">
-				Machine Routes
+			<h2 className="text-xl font-medium mb-0 mt-8">
+				Routing Settings
 			</h2>
+			<h5 className="text-sm font-normal text-gray-400 mb-3 mt-1.5">
+				Let this device route traffic for your tailnet.
+			</h5>
 			<Card variant="flat" className="w-full max-w-full">
-				{routes.length === 0
+				<div
+					className={cn(
+						'flex items-center justify-between',
+						'border-ui-100 dark:border-ui-800',
+					)}
+				>
+					<div>
+						<p className="font-medium mb-1">
+							Exit Node
+						</p>
+						<p className="text-sm text-ui-600 dark:text-ui-300">
+							{routes.some((route) => { return route.prefix === '0.0.0.0/0' && route.enabled })
+							&& routes.some((route) => { return route.prefix === '::/0' && route.enabled })
+								? (
+										(
+											<p>
+												<CheckCircleIcon />
+												{' '}
+												Allowed
+											</p>
+										)
+									)
+								: (
+									<p>
+										<NoEntryIcon />
+										{' '}
+										Not Allowed
+									</p>
+									)}
+						</p>
+					</div>
+				</div>
+			</Card>
+			<h2 className="text-xl font-medium mb-0 mt-8">
+				Subnets
+			</h2>
+			<h5 className="text-sm font-normal text-gray-400 mb-3 mt-1.5">
+				Subnets let you expose physical network routes onto Tailscale.
+			</h5>
+			<Card variant="flat" className="w-full max-w-full">
+				{routes.filter((route) => { return route.prefix !== '0.0.0.0/0' && route.prefix !== '::/0' }).length === 0
 					? (
 						<div
 							className={cn(
@@ -167,13 +227,14 @@ export default function Page() {
 							</p>
 						</div>
 						)
-					: routes.map((route, i) => (
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					: routes.filter((route) => { return route.prefix !== '0.0.0.0/0' && route.prefix !== '::/0' }).map((route, _i) => (
 						<div
 							key={route.id}
 							className={cn(
 								'flex items-center justify-between',
-								routes.length - 1 === i ? 'border-b pb-3 mb-2' : '',
 								'border-ui-100 dark:border-ui-800',
+								'space-y-1',
 							)}
 						>
 							<div>

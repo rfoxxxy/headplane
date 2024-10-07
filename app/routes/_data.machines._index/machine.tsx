@@ -84,23 +84,6 @@ export default function MachineRow({ machine, routes, magic, users }: Props) {
 							<ChevronDownIcon className="w-4 h-4" />
 						</Menu.Button>
 						<Menu.Items>
-							{machine.ipAddresses.map(ip => (
-								<Menu.ItemButton
-									key={ip}
-									type="button"
-									className={cn(
-										'flex items-center gap-x-1.5 text-sm',
-										'justify-between w-full',
-									)}
-									onPress={async () => {
-										await navigator.clipboard.writeText(ip)
-										toast('Copied IP address to clipboard')
-									}}
-								>
-									{ip}
-									<CopyIcon className="w-3 h-3" />
-								</Menu.ItemButton>
-							))}
 							{magic
 								? (
 									<Menu.ItemButton
@@ -109,10 +92,11 @@ export default function MachineRow({ machine, routes, magic, users }: Props) {
 											'flex items-center gap-x-1.5 text-sm',
 											'justify-between w-full break-keep',
 										)}
+										// eslint-disable-next-line @typescript-eslint/no-misused-promises
 										onPress={async () => {
-											const ip = `${machine.givenName}.${prefix}`
+											const ip = machine.givenName
 											await navigator.clipboard.writeText(ip)
-											toast('Copied hostname to clipboard')
+											toast('Copied short domain to clipboard')
 										}}
 									>
 										{machine.givenName}
@@ -122,6 +106,48 @@ export default function MachineRow({ machine, routes, magic, users }: Props) {
 									</Menu.ItemButton>
 									)
 								: undefined}
+							{magic
+								? (
+									<Menu.ItemButton
+										type="button"
+										className={cn(
+											'flex items-center gap-x-1.5 text-sm',
+											'justify-between w-full break-keep',
+										)}
+										// eslint-disable-next-line @typescript-eslint/no-misused-promises
+										onPress={async () => {
+											// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+											const ip = `${machine.givenName}.${prefix}`
+											await navigator.clipboard.writeText(ip)
+											toast('Copied full domain to clipboard')
+										}}
+									>
+										{machine.givenName}
+										.
+										{prefix}
+										<CopyIcon className="w-3 h-3" />
+									</Menu.ItemButton>
+									)
+								: undefined}
+							{machine.ipAddresses.map(ip => (
+								<Menu.ItemButton
+									key={ip}
+									type="button"
+									className={cn(
+										'flex items-center gap-x-1.5 text-sm',
+										'justify-between w-full',
+									)}
+									// eslint-disable-next-line @typescript-eslint/no-misused-promises
+									onPress={async () => {
+										// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+										await navigator.clipboard.writeText(ip)
+										toast('Copied IP address to clipboard')
+									}}
+								>
+									{ip}
+									<CopyIcon className="w-3 h-3" />
+								</Menu.ItemButton>
+							))}
 						</Menu.Items>
 					</Menu>
 				</div>

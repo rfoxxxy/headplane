@@ -24,7 +24,7 @@ export default function Attribute({ name, value, isCopyable }: Props) {
 						// eslint-disable-next-line @typescript-eslint/no-misused-promises
 						onClick={async () => {
 							await navigator.clipboard.writeText(value)
-							toast(`Copied ${name}`)
+							toast(`Copied ${name} to the clipboard`)
 						}}
 					>
 						<dd className="min-w-0 truncate px-2 py-1">

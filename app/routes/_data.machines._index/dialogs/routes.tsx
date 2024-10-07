@@ -27,8 +27,15 @@ export default function Routes({ machine, routes, state }: RoutesProps) {
 							{machine.givenName}
 						</Dialog.Title>
 						<Dialog.Text>
-							Connect to devices you can&apos;t install Tailscale on
-							by advertising IP ranges as subnet routes.
+							<p className="text-base font-medium mb-0 mt-0">
+								Subnet routes
+							</p>
+						</Dialog.Text>
+						<Dialog.Text>
+							<p className="text-sm font-normal mb-0 mt-1">
+								Connect to devices you can&apos;t install Tailscale on
+								by advertising IP ranges as subnet routes.
+							</p>
 						</Dialog.Text>
 						<div className={cn(
 							'rounded-lg overflow-y-auto my-2',
@@ -36,7 +43,7 @@ export default function Routes({ machine, routes, state }: RoutesProps) {
 							'border border-zinc-200 dark:border-zinc-700',
 						)}
 						>
-							{routes.length === 0
+							{routes.filter((route) => { return route.prefix !== '0.0.0.0/0' && route.prefix !== '::/0' }).length === 0
 								? (
 									<div
 										className={cn(
@@ -51,7 +58,7 @@ export default function Routes({ machine, routes, state }: RoutesProps) {
 									</div>
 									)
 								: undefined}
-							{routes.map(route => (
+							{routes.filter((route) => { return route.prefix !== '0.0.0.0/0' && route.prefix !== '::/0' }).map(route => (
 								<div
 									key={route.node.id}
 									className={cn(
@@ -79,6 +86,57 @@ export default function Routes({ machine, routes, state }: RoutesProps) {
 									/>
 								</div>
 							))}
+						</div>
+						<Dialog.Text>
+							<p className="text-base font-medium mb-0 mt-2">
+								Exit Node
+							</p>
+						</Dialog.Text>
+						<Dialog.Text>
+							<p className="text-sm font-normal mb-0 mt-1">
+								Allow your network to route internet traffic through this machine.
+							</p>
+						</Dialog.Text>
+						<div className={cn(
+							'rounded-lg overflow-y-auto my-2',
+							'divide-y divide-zinc-200 dark:divide-zinc-700 align-top',
+							'border border-zinc-200 dark:border-zinc-700',
+						)}
+						>
+							<div
+								className={cn(
+									'flex py-2 px-4 bg-ui-100 dark:bg-ui-800',
+									'items-center justify-between',
+								)}
+							>
+								<p>
+									Use as exit node
+								</p>
+								<Switch
+									isDisabled={!(routes.some((route) => { return route.prefix === '0.0.0.0/0' })
+									&& routes.some((route) => { return route.prefix === '::/0' }))}
+									defaultSelected={routes.some((route) => { return route.prefix === '0.0.0.0/0' && route.enabled })
+									&& routes.some((route) => { return route.prefix === '::/0' && route.enabled })}
+									label="Enabled"
+									onChange={(checked) => {
+										const form = new FormData()
+										form.set('id', machine.id)
+										form.set('_method', 'routes')
+										// eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
+										form.set('route', routes.find(route => route.prefix === '0.0.0.0/0')?.id as string)
+
+										form.set('enabled', String(checked))
+										fetcher.submit(form, {
+											method: 'POST',
+										})
+										// eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
+										form.set('route', routes.find(route => route.prefix === '::/0')?.id as string)
+										fetcher.submit(form, {
+											method: 'POST',
+										})
+									}}
+								/>
+							</div>
 						</div>
 						<div className="mt-6 flex justify-end gap-2 mt-6">
 							<Dialog.Action
