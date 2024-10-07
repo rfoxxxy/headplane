@@ -100,8 +100,6 @@ export default function MachineRow({ machine, routes, magic, users }: Props) {
 										}}
 									>
 										{machine.givenName}
-										.
-										{prefix}
 										<CopyIcon className="w-3 h-3" />
 									</Menu.ItemButton>
 									)
