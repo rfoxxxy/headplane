@@ -5,6 +5,7 @@ import { useLoaderData } from '@remix-run/react'
 import { Button, Tooltip, TooltipTrigger } from 'react-aria-components'
 
 import Code from '~/components/Code'
+import Link from '~/components/Link'
 import { type Machine, type Route, User } from '~/types'
 import { cn } from '~/utils/cn'
 import { loadContext } from '~/utils/config/headplane'
@@ -14,8 +15,8 @@ import { getSession } from '~/utils/sessions'
 import { useLiveData } from '~/utils/useLiveData'
 
 import { menuAction } from './action'
-import MachineRow from './machine'
 import NewMachine from './dialogs/new'
+import MachineRow from './machine'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const session = await getSession(request.headers.get('Cookie'))
@@ -35,6 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		}
 
 		if (config.dns.use_username_in_magic_dns) {
+			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
 			magic = `[user].${magic}`
 		}
 	}
@@ -59,7 +61,32 @@ export default function Page() {
 	return (
 		<>
 			<div className="flex justify-between items-center">
-				<h1 className="text-2xl font-medium mb-4">Machines</h1>
+				<h1 className="text-2xl font-medium mb-4">
+					Machines
+					<h5 className="text-sm font-normal text-gray-400 mb-3 mt-1.5">
+						Manage the devices connected to your tailnet.
+						{' '}
+						<Link
+							to="https://tailscale.com/kb/1372/manage-devices"
+							name="Tailscale device management"
+						>
+							Learn more
+						</Link>
+					</h5>
+					<div className="flex gap-1 mt-1">
+						<span
+							className={cn(
+								'text-xs rounded-full px-2 py-1',
+								'bg-ui-200 dark:bg-ui-800',
+								'text-ui-600 dark:text-ui-300',
+							)}
+						>
+							{data.nodes.length}
+							{' '}
+							machines
+						</span>
+					</div>
+				</h1>
 				<NewMachine server={data.server} users={data.users} />
 			</div>
 			<table className="table-auto w-full rounded-lg">
@@ -102,7 +129,7 @@ export default function Page() {
 					'border-t border-zinc-200 dark:border-zinc-700',
 				)}
 				>
-					{data.nodes.map(machine => (
+					{data.nodes.sort((a, b) => a.user.name.localeCompare(b.user.name)).map(machine => (
 						<MachineRow
 							key={machine.id}
 							machine={machine}

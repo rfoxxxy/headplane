@@ -2,6 +2,7 @@ import { useFetcher } from '@remix-run/react'
 import { type Dispatch, type SetStateAction } from 'react'
 
 import Dialog from '~/components/Dialog'
+import Link from '~/components/Link'
 import Switch from '~/components/Switch'
 import { type Machine, type Route } from '~/types'
 import { cn } from '~/utils/cn'
@@ -35,6 +36,13 @@ export default function Routes({ machine, routes, state }: RoutesProps) {
 							<p className="text-sm font-normal mb-0 mt-1">
 								Connect to devices you can&apos;t install Tailscale on
 								by advertising IP ranges as subnet routes.
+								{' '}
+								<Link
+									to="https://tailscale.com/kb/1019/subnets"
+									name="Tailscale subnets documentation"
+								>
+									Learn more
+								</Link>
 							</p>
 						</Dialog.Text>
 						<div className={cn(
@@ -95,6 +103,13 @@ export default function Routes({ machine, routes, state }: RoutesProps) {
 						<Dialog.Text>
 							<p className="text-sm font-normal mb-0 mt-1">
 								Allow your network to route internet traffic through this machine.
+								{' '}
+								<Link
+									to="https://tailscale.com/kb/1103/exit-nodes"
+									name="Tailscale exit node documentation"
+								>
+									Learn more
+								</Link>
 							</p>
 						</Dialog.Text>
 						<div className={cn(

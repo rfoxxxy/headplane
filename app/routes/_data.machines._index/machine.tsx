@@ -24,6 +24,10 @@ export default function MachineRow({ machine, routes, magic, users }: Props) {
 		? false
 		: new Date(machine.expiry).getTime() < Date.now()
 
+	// eslint-disable-next-line @stylistic/max-statements-per-line
+	const exitNode = routes.some((route) => { return route.prefix === '0.0.0.0/0' && route.enabled })
+		&& routes.some((route) => { return route.prefix === '::/0' && route.enabled })
+
 	let tags = [
 		...machine.forcedTags,
 		...machine.validTags,
@@ -31,6 +35,11 @@ export default function MachineRow({ machine, routes, magic, users }: Props) {
 
 	if (expired) {
 		tags.unshift('Expired')
+	}
+
+	// eslint-disable-next-line @stylistic/max-statements-per-line
+	if (exitNode) {
+		tags.unshift('Exit Node')
 	}
 
 	tags = [...new Set(tags)]
@@ -58,6 +67,10 @@ export default function MachineRow({ machine, routes, magic, users }: Props) {
 						{machine.givenName}
 					</p>
 					<p className="text-sm text-gray-500 dark:text-gray-300 font-mono">
+						{machine.user.name}
+						{' '}
+						•
+						{' '}
 						{machine.name}
 					</p>
 					<div className="flex gap-1 mt-1">

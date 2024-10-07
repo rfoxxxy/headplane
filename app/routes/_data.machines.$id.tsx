@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { CheckCircleIcon, NoEntryIcon } from '@primer/octicons-react'
 import { ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { Link as ReactLink, useLoaderData } from '@remix-run/react'
 
 import Attribute from '~/components/Attribute'
 import Card from '~/components/Card'
+import Link from '~/components/Link'
 import StatusCircle from '~/components/StatusCircle'
 import { type Machine, Route, User } from '~/types'
 import { cn } from '~/utils/cn'
@@ -62,6 +63,10 @@ export default function Page() {
 		? false
 		: new Date(machine.expiry).getTime() < Date.now()
 
+	// eslint-disable-next-line @stylistic/max-statements-per-line
+	const exitNode = routes.some((route) => { return route.prefix === '0.0.0.0/0' && route.enabled })
+		&& routes.some((route) => { return route.prefix === '::/0' && route.enabled })
+
 	let tags = [
 		...machine.forcedTags,
 		...machine.validTags,
@@ -71,17 +76,21 @@ export default function Page() {
 		tags.unshift('Expired')
 	}
 
+	if (exitNode) {
+		tags.unshift('Exit Node')
+	}
+
 	tags = [...new Set(tags)]
 
 	return (
 		<div>
 			<p className="mb-8 text-md">
-				<Link
+				<ReactLink
 					to="/machines"
 					className="font-medium"
 				>
 					All Machines
-				</Link>
+				</ReactLink>
 				<span className="mx-2">
 					/
 				</span>
@@ -171,6 +180,13 @@ export default function Page() {
 			</h2>
 			<h5 className="text-sm font-normal text-gray-400 mb-3 mt-1.5">
 				Let this device route traffic for your tailnet.
+				{' '}
+				<Link
+					to="https://tailscale.com/kb/1351/route"
+					name="Tailscale routing documentation"
+				>
+					Learn more
+				</Link>
 			</h5>
 			<Card variant="flat" className="w-full max-w-full">
 				<div
@@ -184,8 +200,7 @@ export default function Page() {
 							Exit Node
 						</p>
 						<p className="text-sm text-ui-600 dark:text-ui-300">
-							{routes.some((route) => { return route.prefix === '0.0.0.0/0' && route.enabled })
-							&& routes.some((route) => { return route.prefix === '::/0' && route.enabled })
+							{exitNode
 								? (
 										(
 											<p>
@@ -211,6 +226,13 @@ export default function Page() {
 			</h2>
 			<h5 className="text-sm font-normal text-gray-400 mb-3 mt-1.5">
 				Subnets let you expose physical network routes onto Tailscale.
+				{' '}
+				<Link
+					to="https://tailscale.com/kb/1019/subnets"
+					name="Tailscale subnets documentation"
+				>
+					Learn more
+				</Link>
 			</h5>
 			<Card variant="flat" className="w-full max-w-full">
 				{routes.filter((route) => { return route.prefix !== '0.0.0.0/0' && route.prefix !== '::/0' }).length === 0
