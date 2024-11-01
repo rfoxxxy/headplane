@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { CheckCircleIcon, NoEntryIcon } from '@primer/octicons-react'
-import { ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node'
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { Link as ReactLink, useLoaderData } from '@remix-run/react'
 
 import Attribute from '~/components/Attribute'
 import Card from '~/components/Card'
 import Link from '~/components/Link'
 import StatusCircle from '~/components/StatusCircle'
-import { type Machine, Route, User } from '~/types'
+import { Machine, Route, User } from '~/types'
 import { cn } from '~/utils/cn'
 import { loadContext } from '~/utils/config/headplane'
 import { loadConfig } from '~/utils/config/headscale'
@@ -15,8 +15,8 @@ import { pull } from '~/utils/headscale'
 import { getSession } from '~/utils/sessions'
 import { useLiveData } from '~/utils/useLiveData'
 
-import { menuAction } from './_data.machines._index/action'
-import MenuOptions from './_data.machines._index/menu'
+import { menuAction } from '../_data.machines._index/action'
+import MenuOptions from '../_data.machines._index/menu'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const session = await getSession(request.headers.get('Cookie'))

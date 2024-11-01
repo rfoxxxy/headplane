@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { InfoIcon } from '@primer/octicons-react'
-import { type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node'
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { Button, Tooltip, TooltipTrigger } from 'react-aria-components'
 
 import Code from '~/components/Code'
 import Link from '~/components/Link'
-import { type Machine, type Route, User } from '~/types'
+import type { Machine, Route, User } from '~/types'
 import { cn } from '~/utils/cn'
 import { loadContext } from '~/utils/config/headplane'
 import { loadConfig } from '~/utils/config/headscale'

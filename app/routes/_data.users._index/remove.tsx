@@ -7,7 +7,6 @@ import Dialog from '~/components/Dialog'
 
 interface Props {
 	username: string
-	magic?: string
 }
 
 export default function Remove({ username }: Props) {

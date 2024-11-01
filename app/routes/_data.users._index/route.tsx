@@ -167,10 +167,10 @@ export default function Page() {
 			<h1 className="text-2xl font-medium mb-1.5">
 				Users
 			</h1>
-			<p className="mb-8 text-md">
+			<h5 className="text-sm font-normal text-gray-400 mb-3 mt-1.5">
 				Manage the users in your network and their permissions.
 				Tip: You can drag machines between users to change ownership.
-			</p>
+			</h5>
 			{data.oidc
 				? (
 					<Oidc
@@ -335,7 +335,7 @@ function UserCard({ user, magic }: CardProps) {
 						<Rename username={user.name} magic={magic} />
 						{user.machines.length === 0
 							? (
-								<Remove username={user.name} magic={magic} />
+								<Remove username={user.name} />
 								)
 							: undefined}
 					</div>
