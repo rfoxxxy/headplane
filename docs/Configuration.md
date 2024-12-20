@@ -9,12 +9,14 @@ You can configure Headplane using environment variables.
 
 #### Optional Variables
 
+- **`HEADSCALE_PUBLIC_URL`**: The public URL of your Headscale server (if different from `HEADSCALE_URL`).
 - **`DEBUG`**: Enable debug logging (default: `false`).
 - **`HOST`**: The host to bind the server to (default: `0.0.0.0`).
 - **`PORT`**: The port to bind the server to (default: `3000`).
 - **`CONFIG_FILE`**: The path to the Headscale `config.yaml` (default: `/etc/headscale/config.yaml`).
 - **`HEADSCALE_CONFIG_UNSTRICT`**: This will disable the strict configuration loader (default: `false`).
 - **`COOKIE_SECURE`**: This option enables the `Secure` flag for cookies, ensuring they are sent only over HTTPS, which helps prevent interception and enhances data security. It should be disabled when using HTTP instead of HTTPS (default: `true`).
+- **`LOAD_ENV_FILE`**: Tell Headplane to read the `.env` file and load it into the environment (default: `false`).
 
 #### Docker Integration
 The Docker integration allows Headplane to manage the Headscale docker container.
@@ -33,6 +35,8 @@ If you use the Headscale configuration integration, these are not required.
 - **`OIDC_ISSUER`**: The issuer URL of your OIDC provider.
 - **`OIDC_CLIENT_ID`**: The client ID of your OIDC provider.
 - **`OIDC_CLIENT_SECRET`**: The client secret of your OIDC provider.
+- **`OIDC_CLIENT_SECRET_METHOD`**: The method used to send the client secret (default: `client_secret_basic`).
+- **`OIDC_SKIP_CONFIG_VALIDATION`**: Skip the OIDC configuration validation (default: `false`).
 - **`ROOT_API_KEY`**: An API key used to issue new ones for sessions (keep expiry fairly long).
 - **`DISABLE_API_KEY_LOGIN`**: If you want to disable API key login, set this to `true`.
 

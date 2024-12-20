@@ -2,6 +2,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 RUN npm install -g pnpm
+RUN apk add --no-cache git
 COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches
 RUN pnpm install --frozen-lockfile
@@ -19,4 +20,4 @@ RUN echo '{"type":"module"}' > /app/package.json
 EXPOSE 3000
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-CMD [ "node_modules/.bin/remix-serve", "./build/server/index.js" ]
+CMD [ "node", "./build/headplane/server.js" ]

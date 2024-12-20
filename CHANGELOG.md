@@ -1,3 +1,35 @@
+### 0.3.9 (December 6, 2024)
+- Fixed a race condition bug in the OIDC validation code
+
+### 0.3.8 (December 6, 2024)
+- Added a little HTML footer to show the login page and link to a donation page.
+- Allow creating pre-auth keys that expire past 90 days (fixes [#58](https://github.com/tale/headplane/issues/58))
+- Validates OIDC config and ignores validation if specified via variables or Headscale config (fixes [#63](https://github.com/tale/headplane/issues/63))
+
+### 0.3.7 (November 30, 2024)
+- Allow customizing the OIDC token endpoint auth method via `OIDC_CLIENT_SECRET_METHOD` (fixes [#57](https://github.com/tale/headplane/issues/57))
+- Added a `/healthz` endpoint for Kubernetes and other health checks (fixes [#59](https://github.com/tale/headplane/issues/59))
+- Allow `HEADSCALE_PUBLIC_URL` to be set if `HEADSCALE_URL` points to a different internal address (fixes [#60](https://github.com/tale/headplane/issues/60))
+- Fixed an issue where the copy machine registration command had a typo.
+
+### 0.3.6 (November 20, 2024)
+- Fixed an issue where select dropdowns would not scroll (fixes [#53](https://github.com/tale/headplane/issues/53))
+- Added a button to copy the machine registration command to the clipboard (fixes [#52](https://github.com/tale/headplane/issues/52))
+
+### 0.3.5 (November 8, 2024)
+- Quickfix a bug where environment variables are ignored on the server.
+- Remove a nagging error about missing cookie since that happens when signed out.
+
+### 0.3.4 (November 7, 2024)
+- Clicking on the machine name in the users page now takes you to the machine overview page.
+- Completely rebuilt the production server to work better outside of Docker and be lighter. More specifically, we've switched from the `@remix-run/serve` package to our own custom built server.
+- Fixed a bunch of silly issues introduced by me not typechecking the codebase.
+- Improve documentation and support when running Headplane outside of Docker.
+- Removing Split DNS records will no longer result in an error (fixes [#40](https://github.com/tale/headplane/issues/40))
+- Removing the last ACL tag on a machine no longer results in an error (fixes [#41](https://github.com/tale/headplane/issues/41))
+- Added full support for Exit Nodes in the UI and redesigned the machines page (fixes [#36](https://github.com/tale/headplane/issues/36))
+- Added a basic check to see if the API keys passed via cookies are invalid.
+
 ### 0.3.3 (October 28, 2024)
 - Added the ability to load a `.env` file from the PWD when `LOAD_ENV_FILE=true` is set as an environment variable.
 - Fixed an issue where non-English languages could not create Pre-auth keys due to a localization error

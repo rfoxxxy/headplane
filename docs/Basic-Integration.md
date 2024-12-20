@@ -29,7 +29,7 @@ Here is a simple Docker Compose deployment:
 services:
   headplane:
     container_name: headplane
-    image: ghcr.io/tale/headplane:0.3.2
+    image: ghcr.io/tale/headplane:0.3.9
     restart: unless-stopped
     ports:
       - '3000:3000'
@@ -49,6 +49,10 @@ services:
       HOST: '0.0.0.0'
       PORT: '3000'
 ```
+
+Once configured, the Headplane UI will be available at the `/admin` path
+of the server you deployed it on. This is currently not configurable unless
+you build the Docker image yourself or run the Node.js server directly.
 
 > For a breakdown of each configuration variable, please refer to the
 [Configuration](/docs/Configuration.md) guide. 
