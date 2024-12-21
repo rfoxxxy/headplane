@@ -6,7 +6,7 @@
 	"scripts": {
 		"build": "remix vite:build && vite build",
 		"dev": "remix vite:dev",
-		"start": "node server.mjs",
+		"start": "node build/headplane/server.js",
 		"typecheck": "tsc"
 	},
 	"dependencies": {
