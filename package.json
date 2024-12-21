@@ -6,6 +6,7 @@
 	"scripts": {
 		"build": "remix vite:build && vite build",
 		"dev": "remix vite:dev",
+		"start": "node server.mjs",
 		"typecheck": "tsc"
 	},
 	"dependencies": {
