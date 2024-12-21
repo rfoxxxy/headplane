@@ -1,4 +1,5 @@
 # Headplane
+
 > An advanced UI for [juanfont/headscale](https://github.com/juanfont/headscale)
 
 <picture>
@@ -23,15 +24,16 @@ It's able to replicate nearly all of the functions of the official Tailscale Saa
 - Machine/Node expiry, network routing, name, and owner management
 - Access Control List (ACL) and tagging configuration
 - Support for OpenID Connect (OIDC) as a login provider
-- DNS and *safe* Headscale configuration management
+- DNS and _safe_ Headscale configuration management
 
 ## Deployment
+
 > For more configuration options, refer to the [Configuration](/docs/Configuration.md) guide.
 
 For fully-featured deployments, see the [Advanced Deployment](/docs/Advanced-Integration.md) guide.
 This includes automatic management of ACLs, DNS settings, and Headscale configuration.
-*This is the closest experience to the Tailscale UI that can be achieved with Headscale and Headplane.*
-*If you aren't sure which one to pick, we recommend this.*
+_This is the closest experience to the Tailscale UI that can be achieved with Headscale and Headplane._
+_If you aren't sure which one to pick, we recommend this._
 
 If your environment is not able to support the advanced deployment, you can still use the basic deployment.
 For basic deployments, see the [Basic Deployment](/docs/Basic-Integration.md) guide.
@@ -39,6 +41,7 @@ It does not include automatic management of ACLs, DNS settings, or the Headscale
 instead requiring manual editing and reloading when making changes.
 
 ## Contributing
+
 If you would like to contribute, please install a relatively modern version of Node.js and PNPM.
 Clone this repository, run `pnpm install`, and then run `pnpm dev` to start the development server.
 

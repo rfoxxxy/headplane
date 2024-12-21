@@ -19,6 +19,7 @@ You can configure Headplane using environment variables.
 - **`LOAD_ENV_FILE`**: Tell Headplane to read the `.env` file and load it into the environment (default: `false`).
 
 #### Docker Integration
+
 The Docker integration allows Headplane to manage the Headscale docker container.
 You'll need to provide these variables if you want to use this feature.
 Keep in mind that `DOCKER_SOCK` must start with a protocol (e.g., `unix://`).
@@ -28,6 +29,7 @@ Secure API is currently not supported.
 - **`HEADSCALE_CONTAINER`**: The name of the Headscale container (required for Docker integration).
 
 ### SSO/OpenID Connect
+
 If you want to use OpenID Connect for SSO, you'll need to provide these variables.
 Headplane will utilize the expiry of your tokens to determine the expiry of the session.
 If you use the Headscale configuration integration, these are not required.
@@ -45,17 +47,17 @@ Keep in mind that the recommended deployment would be putting Headplane behind /
 If you use a different domain than the Headscale server, you'll need to make sure that Headscale responds with CORS headers.
 
 ```yaml
-- client_id: 'headscale'
-  client_name: 'Headscale and Headplane'
+- client_id: "headscale"
+  client_name: "Headscale and Headplane"
   public: false
-  authorization_policy: 'two_factor'
+  authorization_policy: "two_factor"
   redirect_uris:
-      - 'https://headscale.example.com/oidc/callback'
-      - 'https://headscale.example.com/admin/oidc/callback'
+    - "https://headscale.example.com/oidc/callback"
+    - "https://headscale.example.com/admin/oidc/callback"
   scopes:
-      - 'openid'
-      - 'profile'
-      - 'email'
-  userinfo_signed_response_alg: 'none'
-  client_secret: 'my_super_secret_client_secret'
+    - "openid"
+    - "profile"
+    - "email"
+  userinfo_signed_response_alg: "none"
+  client_secret: "my_super_secret_client_secret"
 ```

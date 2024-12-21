@@ -4,20 +4,20 @@
 
 networks:
   headplane-dev:
-    name: 'headplane-dev'
-    driver: 'bridge'
+    name: "headplane-dev"
+    driver: "bridge"
 services:
   headscale:
-    image: 'headscale/headscale:0.23.0-beta2'
-    container_name: 'headscale'
-    restart: 'unless-stopped'
-    command: 'serve'
+    image: "headscale/headscale:0.23.0-beta2"
+    container_name: "headscale"
+    restart: "unless-stopped"
+    command: "serve"
     networks:
-      - 'headplane-dev'
+      - "headplane-dev"
     volumes:
-      - './.cache/headscale:/var/lib/headscale'
-      - './test:/etc/headscale'
+      - "./.cache/headscale:/var/lib/headscale"
+      - "./test:/etc/headscale"
     ports:
-      - '8080:8080'
+      - "8080:8080"
     environment:
-      TZ: 'America/New_York'
+      TZ: "America/New_York"

@@ -11,15 +11,16 @@ to undefined behavior or the service not restarting.
 ### Deployment
 
 1. Follow the instructions to install Headscale from the
-[Linux Installation Guide](https://headscale.net/setup/install/official).
+   [Linux Installation Guide](https://headscale.net/setup/install/official).
 
 2. Install [Node.js](https://nodejs.org/en/download/package-manager)
-version 20 or higher (your package manager most likely already has this).
+   version 20 or higher (your package manager most likely already has this).
 
 3. Install [PNPM](https://pnpm.io/installation). This is required
-as Headplane has issues running correctly when installed and built via NPM or Yarn.
+   as Headplane has issues running correctly when installed and built via NPM or Yarn.
 
 4. Clone the Headplane repository, install dependencies, and build the project:
+
 ```sh
 git clone https://github.com/tale/headplane # (or clone via SSH)
 cd headplane
@@ -28,6 +29,7 @@ pnpm build
 ```
 
 ### Running Headplane
+
 Start Headplane with `node build/headplane/server.js`.
 
 Headplane does need various environment variables to run correctly. The required
@@ -46,6 +48,7 @@ LOAD_ENV_FILE=true node ./build/headplane/server.js
 > I plan to provide packages and unit files to make this easier in the future.
 
 ### Cannot find ./build directory?
+
 Headplane expects the `build` directory to be present when running the server.
 The structure of this folder is very important and should not be tampered with.
 If you would like to keep the build directory in a different location, you can
@@ -57,6 +60,7 @@ LOAD_ENV_FILE=true BUILD_PATH=/path/to/build node ./build/headplane/server.js
 ```
 
 ### Changing Headplane's Path from `/admin`
+
 Additionally, because you are building Headplane from source, you're able to
 change the default path that Headplane is served from. This can be done by
 specifying the `__INTERNAL_PREFIX` environment variable, when building.

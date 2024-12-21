@@ -129,7 +129,7 @@ node_update_check_interval: 10s
 database:
   type: sqlite3
   sqlite:
-    path: '/var/lib/headscale/db.sqlite'
+    path: "/var/lib/headscale/db.sqlite"
 
 # # Postgres config
 # If using a Unix socket to connect to Postgres, set the socket path in the 'host' field and leave 'port' blank.
@@ -187,7 +187,7 @@ log:
 # ACLs can be defined as YAML or HUJSON.
 # https://tailscale.com/kb/1018/acls/
 policy:
-  mode: 'database'
+  mode: "database"
 
 ## DNS
 #

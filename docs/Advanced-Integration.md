@@ -28,9 +28,9 @@ integration, changes to the configuration file will be automatically applied
 to Headscale.
 
 > By default, the configuration file is read from `/etc/headscale/config.yaml`.
-This can be overridden by setting the `CONFIG_FILE` environment variable. Any
-variables including `HEADSCALE_URL`, `OIDC_CLIENT_ID`, `OIDC_ISSUER`, and
-`OIDC_CLIENT_SECRET` will take priority over the configuration file.
+> This can be overridden by setting the `CONFIG_FILE` environment variable. Any
+> variables including `HEADSCALE_URL`, `OIDC_CLIENT_ID`, `OIDC_ISSUER`, and
+> `OIDC_CLIENT_SECRET` will take priority over the configuration file.
 
 ### Access Control Lists (ACLs)
 
@@ -61,10 +61,12 @@ ACLs when the file is changed.
 ## Deployment
 
 Requirements:
+
 - Headscale 0.23 or newer
 - Headscale and Headplane need a Reverse Proxy (NGINX, Traefik, Caddy, etc)
 
 Currently there are 3 integration providers that can do this for you:
+
 - [Docker Integration](/docs/integration/Docker.md)
 - [Kubernetes Integration](/docs/integration/Kubernetes.md)
 - [Native Linux Integration](/docs/integration/Native.md)
