@@ -302,7 +302,7 @@ function UserCard({ user, magic }: CardProps) {
 						{user.profilePicUrl ? (
 							<div
 								className={cn(
-									"rounded-full !h-7 !w-7 flex items-center justify-center",
+									"flex-shrink-0 rounded-full !h-7 !w-7 flex items-center justify-center",
 									"border border-ui-200 dark:border-ui-700",
 									{
 										"bg-contain bg-center": user.profilePicUrl,
