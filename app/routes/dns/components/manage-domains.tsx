@@ -119,7 +119,7 @@ export default function ManageDomains({
 									type="text"
 									className={cn(
 										'border-none font-mono p-0 text-sm',
-										'rounded-none focus:ring-0 w-full ml-1',
+										'rounded-none focus:none w-full ml-1',
 									)}
 									placeholder="Search Domain"
 									label="Search Domain"
@@ -167,7 +167,7 @@ function Domain({ domain, id, isDragging, isDisabled }: DomainProps) {
 			ref={setNodeRef}
 			className={cn(
 				isSortableDragging ? 'opacity-50' : '',
-				isDragging ? 'ring bg-white dark:bg-headplane-900' : '',
+				isDragging ? 'bg-white dark:bg-headplane-900' : '',
 			)}
 			style={{
 				transform: CSS.Transform.toString(transform),
@@ -179,7 +179,7 @@ function Domain({ domain, id, isDragging, isDisabled }: DomainProps) {
 					<GripVertical
 						{...attributes}
 						{...listeners}
-						className="p-0.5 focus:ring outline-none rounded-md"
+						className="p-0.5 focus:none outline-none rounded-md"
 					/>
 				)}
 				{domain}

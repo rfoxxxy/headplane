@@ -156,10 +156,10 @@ function DModal(props: DModalProps) {
 				className={cn(
 					'fixed inset-0 h-screen w-screen z-20',
 					'flex items-center justify-center',
-					'bg-headplane-900/15 dark:bg-headplane-900/30',
+					'bg-headplane-900/35 dark:bg-headplane-900/65',
 					'entering:animate-in exiting:animate-out',
-					'entering:fade-in entering:duration-100 entering:ease-out',
-					'exiting:fade-out exiting:duration-50 exiting:ease-in',
+					'entering:fade-in entering:duration-1000 entering:ease-out',
+					'exiting:fade-out exiting:duration-500 exiting:ease-in',
 				)}
 			/>
 			<div

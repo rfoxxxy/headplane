@@ -38,7 +38,7 @@ function Tooltip(props: TooltipProps) {
 				{...triggerProps}
 				className={cn(
 					'flex items-center justify-center',
-					'focus:outline-none focus:ring rounded-xl',
+					'focus:outline-none focus:none rounded-xl',
 				)}
 			>
 				{component}

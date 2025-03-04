@@ -7,6 +7,7 @@ export interface AttributeProps {
 	value: string;
 	isCopyable?: boolean;
 	link?: string;
+	isWide?: boolean;
 }
 
 export default function Attribute({
@@ -14,12 +15,23 @@ export default function Attribute({
 	value,
 	link,
 	isCopyable,
+	isWide
 }: AttributeProps) {
 	return (
-		<dl className="flex items-center w-full gap-x-1">
+		<dl className={cn(
+			'flex items-center w-full gap-x-1',
+				isWide && 'gap-x-[6rem]',
+			)}
+		>
 			<dt className="font-semibold w-1/4 shrink-0 text-sm">
 				{link ? (
-					<a className="hover:underline" href={link}>
+					<a
+						className={cn(
+							'hover:underline',
+							isWide && 'max-w-[10rem]',
+						)}
+						href={link}
+					>
 						{name}
 					</a>
 				) : (
@@ -28,9 +40,9 @@ export default function Attribute({
 			</dt>
 			<dd
 				className={cn(
-					'rounded-lg truncate w-full px-2.5 py-1 text-sm',
+					'rounded-lg truncate px-2.5 py-1 text-sm',
 					'flex items-center gap-x-1',
-					'focus-within:outline-none focus-within:ring-2',
+					'focus-within:none',
 					isCopyable && 'hover:bg-headplane-100 dark:hover:bg-headplane-800',
 				)}
 			>
@@ -45,7 +57,7 @@ export default function Attribute({
 							}
 
 							await navigator.clipboard.writeText(value);
-							toast('Copied to clipboard');
+							toast(`Copied ${name} to clipboard`);
 
 							setTimeout(() => {
 								for (const svg of svgs) {

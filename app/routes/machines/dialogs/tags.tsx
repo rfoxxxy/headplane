@@ -59,10 +59,10 @@ export default function Tags({ machine, isOpen, setIsOpen }: TagsProps) {
 					)}
 					<TableList.Item
 						className={cn(
-							'rounded-b-xl focus-within:ring',
+							'rounded-b-xl focus-within:none',
 							tag.length > 0 &&
 								(!tag.startsWith('tag:') || tags.includes(tag)) &&
-								'ring ring-red-500 ring-opacity-50',
+								'',
 						)}
 					>
 						<Input
@@ -72,7 +72,7 @@ export default function Tags({ machine, isOpen, setIsOpen }: TagsProps) {
 							onChange={setTag}
 							className={cn(
 								'border-none font-mono p-0',
-								'rounded-none focus:ring-0 w-full',
+								'rounded-none focus:none w-full',
 							)}
 						/>
 						<Button

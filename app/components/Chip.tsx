@@ -19,7 +19,7 @@ export default function Chip({
 			className={cn(
 				'text-xs px-2 py-0.5 rounded-full',
 				'text-headplane-700 dark:text-headplane-100',
-				'bg-headplane-100 dark:bg-headplane-700',
+				'bg-headplane-100 dark:bg-headplane-700 overflow-ellipsis text-nowrap',
 				leftIcon || rightIcon ? 'inline-flex items-center gap-x-1' : '',
 				className,
 			)}

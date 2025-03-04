@@ -43,7 +43,7 @@ export default function Switch(props: SwitchProps) {
 					'bg-headplane-300 dark:bg-headplane-700',
 					'border border-transparent dark:border-headplane-800',
 					state.isSelected && 'bg-headplane-900 dark:bg-headplane-950',
-					isFocusVisible && 'ring-2',
+					isFocusVisible && '',
 					props.isDisabled && 'opacity-50',
 				)}
 			>

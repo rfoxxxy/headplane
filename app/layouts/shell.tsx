@@ -4,7 +4,6 @@ import {
 	redirect,
 	useLoaderData,
 } from 'react-router';
-import Footer from '~/components/Footer';
 import Header from '~/components/Header';
 import { hs_getConfig } from '~/utils/config/loader';
 import { noContext } from '~/utils/log';
@@ -44,7 +43,6 @@ export default function Shell() {
 		<>
 			<Header {...data} />
 			<Outlet />
-			<Footer {...data} />
 		</>
 	);
 }

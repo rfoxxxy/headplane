@@ -33,11 +33,14 @@ export default function MachineRow({
 			? false
 			: new Date(machine.expiry).getTime() < Date.now();
 
-	const tags = [...new Set([...machine.forcedTags, ...machine.validTags])];
+	const expiryDisabled =
+		machine.expiry === "0001-01-01 00:00:00" ||
+		machine.expiry === "0001-01-01T00:00:00Z" ||
+		machine.expiry === null
+			? true
+			: false;
 
-	if (expired) {
-		tags.unshift('Expired');
-	}
+	let tags = [...new Set([...machine.forcedTags, ...machine.validTags])];
 
 	const prefix = magic?.startsWith('[user]')
 		? magic.replace('[user]', machine.user.name)
@@ -79,6 +82,18 @@ export default function MachineRow({
 		tags.unshift('Subnets');
 	}
 
+	if (expiryDisabled) {
+		tags.unshift("Expiry disabled");
+	}
+
+	if (expired) {
+		tags.unshift(
+			`Expired ${new Date(machine.expiry).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })}`,
+		);
+	}
+
+	tags = [...new Set(tags)];
+
 	const ipOptions = useMemo(() => {
 		if (magic) {
 			return [...machine.ipAddresses, `${machine.givenName}.${prefix}`];
@@ -92,7 +107,7 @@ export default function MachineRow({
 			key={machine.id}
 			className="'group hover:bg-headplane-50 dark:hover:bg-headplane-950"
 		>
-			<td className="pl-0.5 py-2 focus-within:ring">
+			<td className="pl-0.5 py-2 focus-within:none">
 				<Link
 					to={`/machines/${machine.id}`}
 					className={cn('group/link h-full focus:outline-none')}
@@ -100,13 +115,19 @@ export default function MachineRow({
 					<p
 						className={cn(
 							'font-semibold leading-snug',
-							'group-hover/link:text-blue-600',
-							'group-hover/link:dark:text-blue-400',
+							'group-hover/link:text-headplane-800',
+							'group-hover/link:dark:text-headplane-300',
 						)}
 					>
 						{machine.givenName}
 					</p>
-					<p className="text-sm font-mono opacity-50">{machine.name}</p>
+					<p className="text-sm font-mono opacity-50">
+						{machine.user.email ||
+							machine.user.displayName ||
+							machine.user.name}
+						{" "}•{" "}
+						{machine.name}
+					</p>
 					<div className="flex gap-1 mt-1">
 						{tags.map((tag) => (
 							<Chip key={tag} text={tag} />
@@ -178,7 +199,7 @@ export default function MachineRow({
 					<p>
 						{machine.online && !expired
 							? 'Connected'
-							: new Date(machine.lastSeen).toLocaleString()}
+							: `${new Date(machine.lastSeen).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })} at ${new Date(machine.lastSeen).toLocaleString(undefined, { hour: "numeric", minute: "numeric", timeZoneName: "short" })}`}
 					</p>
 				</span>
 			</td>

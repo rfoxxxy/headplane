@@ -41,7 +41,7 @@ function TabLink({ name, to, icon }: TabLinkProps) {
 						'after:absolute after:bottom-0 after:left-3 after:right-3',
 						'after:h-0.5 after:bg-headplane-900 dark:after:bg-headplane-200',
 						'hover:bg-headplane-200 dark:hover:bg-headplane-900',
-						'focus:outline-none focus:ring',
+						'focus:outline-none focus:none',
 						isActive ? 'after:visible' : 'after:invisible',
 					)
 				}
@@ -60,7 +60,7 @@ function Link({ href, text }: LinkProps) {
 			rel="noreferrer"
 			className={cn(
 				'hidden sm:block hover:underline text-sm',
-				'focus:outline-none focus:ring rounded-md',
+				'focus:outline-none focus:none rounded-md',
 			)}
 		>
 			{text}
@@ -86,9 +86,6 @@ export default function Header(data: Props) {
 					<h1 className="text-2xl font-semibold">headplane</h1>
 				</div>
 				<div className="flex items-center gap-x-4">
-					<Link href="https://tailscale.com/download" text="Download" />
-					<Link href="https://github.com/tale/headplane" text="GitHub" />
-					<Link href="https://github.com/juanfont/headscale" text="Headscale" />
 					{data.user ? (
 						<Menu>
 							<Menu.IconButton label="User">

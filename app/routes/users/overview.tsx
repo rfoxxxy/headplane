@@ -218,8 +218,33 @@ function UserCard({ user, magic }: CardProps) {
 			>
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
-						<PersonIcon className="w-6 h-6" />
-						<span className="text-lg font-mono">{user.name}</span>
+					{user.profilePicUrl ? (
+							<div
+								className={cn(
+									"flex-shrink-0 rounded-full",
+									user.email ? "!h-10 !w-10" : "!h-7 !w-7",
+									"flex items-center justify-center",
+									"border border-ui-200 dark:border-ui-700",
+									{
+										"bg-contain bg-center": user.profilePicUrl,
+									},
+								)}
+								style={{
+									backgroundImage: user.profilePicUrl
+										? `url(${user.profilePicUrl})`
+										: "none",
+								}}
+							></div>
+						) : (
+							<PersonIcon className={user.email ? "w-10 h-10" : "w-6 h-6"} />
+						)}
+
+						<div className="text-lg font-mono">
+							<div className="flex flex-col gap-0.2">
+									<span>{user.displayName || user.name}</span>
+								{user.email && <span className="opacity-50 text-sm">{user.email}</span>}
+							</div>
+						</div>
 					</div>
 					<div className="flex items-center gap-2">
 						<RenameUser user={user} />

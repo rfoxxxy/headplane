@@ -13,7 +13,7 @@ export default function Code({ isCopyable, children, className }: CodeProps) {
 		<code
 			className={cn(
 				'bg-headplane-100 dark:bg-headplane-800 px-1 py-0.5 font-mono',
-				'rounded-lg focus-within:outline-none focus-within:ring-2',
+				'rounded-lg focus-within:outline-none focus-within:none',
 				isCopyable && 'relative pr-7',
 				className,
 			)}

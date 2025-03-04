@@ -17,6 +17,7 @@ import { getSession } from '~/utils/sessions.server';
 import { menuAction } from './action';
 import MenuOptions from './components/menu';
 import Routes from './dialogs/routes';
+import { PersonIcon } from '@primer/octicons-react';
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const session = await getSession(request.headers.get('Cookie'));
@@ -62,11 +63,14 @@ export default function Page() {
 			? false
 			: new Date(machine.expiry).getTime() < Date.now();
 
-	const tags = [...new Set([...machine.forcedTags, ...machine.validTags])];
+	const expiryDisabled =
+		machine.expiry === "0001-01-01 00:00:00" ||
+		machine.expiry === "0001-01-01T00:00:00Z" ||
+		machine.expiry === null
+			? true
+			: false;
 
-	if (expired) {
-		tags.unshift('Expired');
-	}
+	let tags = [...new Set([...machine.forcedTags, ...machine.validTags])];
 
 	// This is much easier with Object.groupBy but it's too new for us
 	const { exit, subnet, subnetApproved } = routes.reduce<{
@@ -103,6 +107,18 @@ export default function Page() {
 	if (subnetApproved.length > 0) {
 		tags.unshift('Subnets');
 	}
+
+	if (expiryDisabled) {
+		tags.unshift("Expiry disabled");
+	}
+
+	if (expired) {
+		tags.unshift(
+			`Expired ${new Date(machine.expiry).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })}`,
+		);
+	}
+
+	tags = [...new Set(tags)];
 
 	return (
 		<div>
@@ -144,8 +160,27 @@ export default function Page() {
 						</Tooltip>
 					</span>
 					<div className="flex items-center gap-x-2.5 mt-1">
-						<UserCircle />
-						{machine.user.name}
+						<div
+							className={cn(
+								"rounded-full h-7 w-7 flex items-center justify-center",
+								"border border-ui-200 dark:border-ui-700",
+								{
+									"bg-contain": machine.user.profilePicUrl,
+								},
+							)}
+							style={{
+								backgroundImage: machine.user.profilePicUrl
+									? `url(${machine.user.profilePicUrl})`
+									: "none",
+							}}
+						>
+							{!machine.user.profilePicUrl && (
+								<PersonIcon className="w-4 h-4" />
+							)}
+						</div>
+						{machine.user.email ||
+							machine.user.displayName ||
+							machine.user.name}
 					</div>
 				</div>
 				<div className="p-2 pl-4">
@@ -206,15 +241,6 @@ export default function Page() {
 							</ul>
 						)}
 					</div>
-					<Button
-						onPress={() => setShowRouting(true)}
-						className={cn(
-							'px-1.5 py-0.5 rounded-md mt-1.5',
-							'text-blue-500 dark:text-blue-400',
-						)}
-					>
-						Edit
-					</Button>
 				</div>
 				<div>
 					<span className="text-headplane-600 dark:text-headplane-300 flex items-center gap-x-1">
@@ -238,15 +264,6 @@ export default function Page() {
 							</ul>
 						)}
 					</div>
-					<Button
-						onPress={() => setShowRouting(true)}
-						className={cn(
-							'px-1.5 py-0.5 rounded-md mt-1.5',
-							'text-blue-500 dark:text-blue-400',
-						)}
-					>
-						Edit
-					</Button>
 				</div>
 				<div>
 					<span className="text-headplane-600 dark:text-headplane-300 flex items-center gap-x-1">
@@ -273,41 +290,52 @@ export default function Page() {
 							</span>
 						)}
 					</div>
-					<Button
-						onPress={() => setShowRouting(true)}
-						className={cn(
-							'px-1.5 py-0.5 rounded-md mt-1.5',
-							'text-blue-500 dark:text-blue-400',
-						)}
-					>
-						Edit
-					</Button>
 				</div>
 			</Card>
 			<h2 className="text-xl font-medium mb-4">Machine Details</h2>
 			<Card variant="flat" className="w-full max-w-full">
 				<Attribute name="Creator" value={machine.user.name} />
-				<Attribute name="Node ID" value={machine.id} />
-				<Attribute name="Node Name" value={machine.givenName} />
-				<Attribute name="Hostname" value={machine.name} />
+				<Attribute name="Machine Name" value={machine.givenName} isCopyable />
+				<Attribute name="OS Hostname" value={machine.name} />
+				<Attribute name="ID" value={machine.id} isCopyable />
 				<Attribute isCopyable name="Node Key" value={machine.nodeKey} />
 				<Attribute
 					name="Created"
-					value={new Date(machine.createdAt).toLocaleString()}
+					value={`${new Date(machine.createdAt).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })} at ${new Date(machine.createdAt).toLocaleString(undefined, { hour: "numeric", minute: "numeric", timeZoneName: "short" })}`}
 				/>
 				<Attribute
 					name="Last Seen"
-					value={new Date(machine.lastSeen).toLocaleString()}
+					value={`${new Date(machine.lastSeen).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })} at ${new Date(machine.lastSeen).toLocaleString(undefined, { hour: "numeric", minute: "numeric", timeZoneName: "short" })}`}
 				/>
 				<Attribute
-					name="Expiry"
-					value={expired ? new Date(machine.expiry).toLocaleString() : 'Never'}
+					name="Key expiry"
+					value={
+						!expiryDisabled
+							? new Date(machine.expiry).toLocaleString(undefined, {
+									day: "numeric",
+									month: "short",
+									year: "numeric",
+								})
+							: "No expiry"
+					}
 				/>
 				{magic ? (
 					<Attribute
 						isCopyable
 						name="Domain"
 						value={`${machine.givenName}.${magic}`}
+					/>
+				) : undefined}
+				<Attribute
+					isCopyable
+					name="Tailscale IPv4"
+					value={machine.ipAddresses[0]}
+				/>
+				{machine.ipAddresses.length > 1 ? (
+					<Attribute
+						isCopyable
+						name="Tailscale IPv6"
+						value={machine.ipAddresses[1]}
 					/>
 				) : undefined}
 			</Card>
