@@ -58,7 +58,7 @@ export default function UserRow({ user, role }: UserRowProps) {
 				>
 					<StatusCircle isOnline={isOnline} className="w-4 h-4" />
 					<p suppressHydrationWarning>
-						{isOnline ? 'Connected' : new Date(lastSeen).toLocaleString()}
+						{isOnline ? 'Connected' : `${new Date(lastSeen).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })} at ${new Date(lastSeen).toLocaleString(undefined, { hour: "numeric", minute: "numeric", timeZoneName: "short" })}`}
 					</p>
 				</span>
 			</td>
