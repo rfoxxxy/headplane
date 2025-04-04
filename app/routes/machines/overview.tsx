@@ -138,16 +138,18 @@ export default function Page() {
 				>
 					{data.nodes
 						.sort((a, b) => {
-							const nameA = a.user.email || a.user.displayName || a.user.name;
-							const nameB = b.user.email || b.user.displayName || b.user.name;
-							const ipA = a.ipAddresses[0].split(".")[3];
-							const ipB = b.ipAddresses[0].split(".")[3];
+							const nameA = a.user.email || a.user.displayName || a.user.name || '';
+							const nameB = b.user.email || b.user.displayName || b.user.name || '';
+							
+							const ipA = a.ipAddresses[0]?.split('.').pop() || '0';
+							const ipB = b.ipAddresses[0]?.split('.').pop() || '0';
 							
 							const nameComparison = nameA.localeCompare(nameB);
 							if (nameComparison !== 0) {
 								return nameComparison;
 							}
-							return ipA.localeCompare(ipB);
+							
+							return Number(ipA) - Number(ipB);
 						})
 						.map((machine) => (
 							<MachineRow
