@@ -30,13 +30,13 @@ export function getOSInfo(host: HostInfo) {
 			version = undefined;
 		}
 	}
-	const formattedOS = formatOS(os);
+	const formattedOS = formatOS(os, true);
 
 	// Trim in case OSVersion is empty
 	return `${formattedOS} ${kernel ?? ''}`.trim();
 }
 
-function formatOS(os?: string) {
+function formatOS(os?: string, makeCapital?: boolean) {
 	switch (os) {
 		case 'macOS':
 		case 'iOS':
@@ -50,6 +50,6 @@ function formatOS(os?: string) {
 		case undefined:
 			return 'Unknown';
 		default:
-			return os;
+			return makeCapital ? os.charAt(0).toUpperCase() + os.slice(1) : os;
 	}
 }
