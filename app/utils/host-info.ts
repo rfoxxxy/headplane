@@ -11,12 +11,29 @@ export function getTSVersion(host: HostInfo) {
 }
 
 export function getOSInfo(host: HostInfo) {
-	const { OS, OSVersion } = host;
+	const { OS, OSVersion, Distro, DistroVersion } = host;
+	var os = OS;
+	var version = DistroVersion;
+	var kernel = OSVersion;
 	// OS follows runtime.GOOS but uses iOS and macOS instead of darwin
-	const formattedOS = formatOS(OS);
+	if (OS === 'linux') {
+		if (Distro && DistroVersion) {
+			os = Distro;
+			if (os === 'arch') {
+				os = DistroVersion;
+				version = undefined;
+			} else {
+				version = DistroVersion;
+			}
+		} else if (Distro && !DistroVersion) {
+			os = Distro;
+			version = undefined;
+		}
+	}
+	const formattedOS = formatOS(os);
 
 	// Trim in case OSVersion is empty
-	return `${formattedOS} ${OSVersion ?? ''}`.trim();
+	return `${formattedOS} ${kernel ?? ''}`.trim();
 }
 
 function formatOS(os?: string) {
@@ -28,6 +45,8 @@ function formatOS(os?: string) {
 			return 'Windows';
 		case 'linux':
 			return 'Linux';
+		case 'android':
+			return 'Android';
 		case undefined:
 			return 'Unknown';
 		default:
