@@ -33,7 +33,7 @@ export function getOSInfo(host: HostInfo) {
 	const formattedOS = formatOS(os, true);
 
 	// Trim in case OSVersion is empty
-	return `${formattedOS} ${kernel ?? ''}`.trim();
+	return `${formattedOS} ${version ? version : kernel ? kernel : ''}`.trim();
 }
 
 function formatOS(os?: string, makeCapital?: boolean) {
