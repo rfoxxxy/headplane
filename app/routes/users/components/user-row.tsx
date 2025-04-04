@@ -46,7 +46,7 @@ export default function UserRow({ user, role }: UserRowProps) {
 					suppressHydrationWarning
 					className="text-sm text-headplane-600 dark:text-headplane-300"
 				>
-					{new Date(user.createdAt).toLocaleDateString()}
+					{new Date(user.createdAt).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })}
 				</p>
 			</td>
 			<td className="pl-0.5 py-2">

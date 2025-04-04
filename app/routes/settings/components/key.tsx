@@ -12,8 +12,8 @@ interface Props {
 }
 
 export default function AuthKeyRow({ authKey, server }: Props) {
-	const createdAt = new Date(authKey.createdAt).toLocaleString();
-	const expiration = new Date(authKey.expiration).toLocaleString();
+	const createdAt = `${new Date(authKey.createdAt).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })} at ${new Date(authKey.createdAt).toLocaleString(undefined, { hour: "numeric", minute: "numeric", timeZoneName: "short" })}`;
+	const expiration = `${new Date(authKey.expiration).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })} at ${new Date(authKey.expiration).toLocaleString(undefined, { hour: "numeric", minute: "numeric", timeZoneName: "short" })}`;
 
 	return (
 		<div className="w-full">
