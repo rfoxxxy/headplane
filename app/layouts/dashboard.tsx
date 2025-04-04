@@ -1,34 +1,30 @@
 import { XCircleFillIcon } from '@primer/octicons-react';
 import { type LoaderFunctionArgs, redirect } from 'react-router';
 import { Outlet, useLoaderData } from 'react-router';
+import { ErrorPopup } from '~/components/Error';
+import type { LoadContext } from '~/server';
+import ResponseError from '~/server/headscale/api-error';
 import cn from '~/utils/cn';
-import { HeadscaleError, healthcheck, pull } from '~/utils/headscale';
 import log from '~/utils/log';
-import { destroySession, getSession } from '~/utils/sessions.server';
-import { useLiveData } from '~/utils/useLiveData';
 
-export async function loader({ request }: LoaderFunctionArgs) {
-	let healthy = false;
-	try {
-		healthy = await healthcheck();
-	} catch (error) {
-		log.debug('APIC', 'Healthcheck failed %o', error);
-	}
+export async function loader({
+	request,
+	context,
+}: LoaderFunctionArgs<LoadContext>) {
+	const healthy = await context.client.healthcheck();
+	const session = await context.sessions.auth(request);
 
 	// We shouldn't session invalidate if Headscale is down
+	// TODO: Notify in the logs or the UI that OIDC auth key is wrong if enabled
 	if (healthy) {
-		// We can assert because shell ensures this is set
-		const session = await getSession(request.headers.get('Cookie'));
-		const apiKey = session.get('hsApiKey')!;
-
 		try {
-			await pull('v1/apikey', apiKey);
+			await context.client.get('v1/apikey', session.get('api_key')!);
 		} catch (error) {
-			if (error instanceof HeadscaleError) {
-				log.debug('APIC', 'API Key validation failed %o', error);
+			if (error instanceof ResponseError) {
+				log.debug('api', 'API Key validation failed %o', error);
 				return redirect('/login', {
 					headers: {
-						'Set-Cookie': await destroySession(session),
+						'Set-Cookie': await context.sessions.destroy(session),
 					},
 				});
 			}
@@ -41,7 +37,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Layout() {
-	useLiveData({ interval: 3000 });
 	const { healthy } = useLoaderData<typeof loader>();
 
 	return (
@@ -70,4 +65,8 @@ export default function Layout() {
 			</main>
 		</>
 	);
+}
+
+export function ErrorBoundary() {
+	return <ErrorPopup type="embedded" />;
 }

@@ -14,6 +14,8 @@ export default [
 	// All the main logged-in dashboard routes
 	// Double nested to separate error propagations
 	layout('layouts/shell.tsx', [
+		route('/onboarding', 'routes/users/onboarding.tsx'),
+		route('/onboarding/skip', 'routes/users/onboarding-skip.tsx'),
 		layout('layouts/dashboard.tsx', [
 			...prefix('/machines', [
 				index('routes/machines/overview.tsx'),
@@ -21,7 +23,7 @@ export default [
 			]),
 
 			route('/users', 'routes/users/overview.tsx'),
-			route('/acls', 'routes/acls/editor.tsx'),
+			route('/acls', 'routes/acls/overview.tsx'),
 			route('/dns', 'routes/dns/overview.tsx'),
 
 			...prefix('/settings', [

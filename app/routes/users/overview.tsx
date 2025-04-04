@@ -1,39 +1,42 @@
-import { DataRef, DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
-import { PersonIcon } from '@primer/octicons-react';
 import { useEffect, useState } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router';
 import { useLoaderData, useSubmit } from 'react-router';
-import { ClientOnly } from 'remix-utils/client-only';
-
-import Attribute from '~/components/Attribute';
-import Card from '~/components/Card';
-import { ErrorPopup } from '~/components/Error';
-import StatusCircle from '~/components/StatusCircle';
-import type { Machine, User } from '~/types';
+import type { LoadContext } from '~/server';
+import { Capabilities } from '~/server/web/roles';
+import { Machine, User } from '~/types';
 import cn from '~/utils/cn';
-import { pull } from '~/utils/headscale';
-import { getSession } from '~/utils/sessions.server';
-
-import { hs_getConfig } from '~/utils/config/loader';
-import { noContext } from '~/utils/log';
-import type { AppContext } from '~server/context/app';
 import ManageBanner from './components/manage-banner';
-import DeleteUser from './dialogs/delete-user';
-import RenameUser from './dialogs/rename-user';
+import UserRow from './components/user-row';
 import { userAction } from './user-actions';
+
+interface UserMachine extends User {
+	machines: Machine[];
+}
 
 export async function loader({
 	request,
 	context,
-}: LoaderFunctionArgs<AppContext>) {
-	const session = await getSession(request.headers.get('Cookie'));
-	if (!context) {
-		throw noContext();
+}: LoaderFunctionArgs<LoadContext>) {
+	const session = await context.sessions.auth(request);
+	const check = await context.sessions.check(request, Capabilities.read_users);
+	if (!check) {
+		// Not authorized to view this page
+		throw new Error(
+			'You do not have permission to view this page. Please contact your administrator.',
+		);
 	}
 
+	const writablePermission = await context.sessions.check(
+		request,
+		Capabilities.write_users,
+	);
+
 	const [machines, apiUsers] = await Promise.all([
-		pull<{ nodes: Machine[] }>('v1/node', session.get('hsApiKey')!),
-		pull<{ users: User[] }>('v1/user', session.get('hsApiKey')!),
+		context.client.get<{ nodes: Machine[] }>(
+			'v1/node',
+			session.get('api_key')!,
+		),
+		context.client.get<{ users: User[] }>('v1/user', session.get('api_key')!),
 	]);
 
 	const users = apiUsers.users.map((user) => ({
@@ -41,18 +44,42 @@ export async function loader({
 		machines: machines.nodes.filter((machine) => machine.user.id === user.id),
 	}));
 
-	const ctx = context.context;
-	const { mode, config } = hs_getConfig();
-	let magic: string | undefined;
+	const roles = users
+		.sort((a, b) => a.name.localeCompare(b.name))
+		.map((user) => {
+			if (user.provider !== 'oidc') {
+				return 'no-oidc';
+			}
 
-	if (mode !== 'no') {
-		if (config.dns.magic_dns) {
-			magic = config.dns.base_domain;
+			if (user.provider === 'oidc' && user.providerId) {
+				// For some reason, headscale makes providerID a url where the
+				// last component is the subject, so we need to strip that out
+				const subject = user.providerId.split('/').pop();
+				if (!subject) {
+					return 'invalid-oidc';
+				}
+
+				const role = context.sessions.roleForSubject(subject);
+				return role ?? 'no-role';
+			}
+
+			// No role means the user is not registered in Headplane, but they
+			// are in Headscale. We also need to handle what happens if someone
+			// logs into the UI and they don't have a Headscale setup.
+			return 'no-role';
+		});
+
+	let magic: string | undefined;
+	if (context.hs.readable()) {
+		if (context.hs.c?.dns.magic_dns) {
+			magic = context.hs.c.dns.base_domain;
 		}
 	}
 
 	return {
-		oidc: ctx.oidc,
+		writable: writablePermission, // whether the user can write to the API
+		oidc: context.config.oidc,
+		roles,
 		magic,
 		users,
 	};
@@ -81,188 +108,33 @@ export default function Page() {
 				Manage the users in your network and their permissions. Tip: You can
 				drag machines between users to change ownership.
 			</p>
-			<ManageBanner oidc={data.oidc} />
-			<ClientOnly fallback={<Users users={users} />}>
-				{() => (
-					<InteractiveUsers
-						users={users}
-						setUsers={setUsers}
-						magic={data.magic}
-					/>
-				)}
-			</ClientOnly>
+			<ManageBanner oidc={data.oidc} isDisabled={!data.writable} />
+			<table className="table-auto w-full rounded-lg">
+				<thead className="text-headplane-600 dark:text-headplane-300">
+					<tr className="text-left px-0.5">
+						<th className="uppercase text-xs font-bold pb-2">User</th>
+						<th className="uppercase text-xs font-bold pb-2">Role</th>
+						<th className="uppercase text-xs font-bold pb-2">Created At</th>
+						<th className="uppercase text-xs font-bold pb-2">Last Seen</th>
+					</tr>
+				</thead>
+				<tbody
+					className={cn(
+						'divide-y divide-headplane-100 dark:divide-headplane-800 align-top',
+						'border-t border-headplane-100 dark:border-headplane-800',
+					)}
+				>
+					{users
+						.sort((a, b) => a.name.localeCompare(b.name))
+						.map((user) => (
+							<UserRow
+								key={user.id}
+								user={user}
+								role={data.roles[users.indexOf(user)]}
+							/>
+						))}
+				</tbody>
+			</table>
 		</>
 	);
-}
-
-type UserMachine = User & { machines: Machine[] };
-
-interface UserProps {
-	users: UserMachine[];
-	setUsers?: (users: UserMachine[]) => void;
-	magic?: string;
-}
-
-function Users({ users, magic }: UserProps) {
-	return (
-		<div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-min">
-			{users.map((user) => (
-				<UserCard key={user.id} user={user} magic={magic} />
-			))}
-		</div>
-	);
-}
-
-function InteractiveUsers({ users, setUsers, magic }: UserProps) {
-	const submit = useSubmit();
-
-	return (
-		<DndContext
-			onDragEnd={(event) => {
-				const { over, active } = event;
-				if (!over) {
-					return;
-				}
-
-				// Update the UI optimistically
-				const newUsers = new Array<UserMachine>();
-				const reference = active.data as DataRef<Machine>;
-				if (!reference.current) {
-					return;
-				}
-
-				// Ignore if the user is unchanged
-				if (reference.current.user.name === over.id) {
-					return;
-				}
-
-				for (const user of users) {
-					newUsers.push({
-						...user,
-						machines:
-							over.id === user.name
-								? [...user.machines, reference.current]
-								: user.machines.filter((m) => m.id !== active.id),
-					});
-				}
-
-				setUsers?.(newUsers);
-				const data = new FormData();
-				data.append('action_id', 'change_owner');
-				data.append('user_id', over.id.toString());
-				data.append('node_id', reference.current.id);
-
-				submit(data, {
-					method: 'POST',
-				});
-			}}
-		>
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-min">
-				{users.map((user) => (
-					<UserCard key={user.id} user={user} magic={magic} />
-				))}
-			</div>
-		</DndContext>
-	);
-}
-
-function MachineChip({ machine }: { readonly machine: Machine }) {
-	const { attributes, listeners, setNodeRef, transform } = useDraggable({
-		id: machine.id,
-		data: machine,
-	});
-
-	return (
-		<div
-			ref={setNodeRef}
-			className={cn(
-				'flex items-center w-full gap-2 py-1',
-				'hover:bg-headplane-50 dark:hover:bg-headplane-950 rounded-xl',
-			)}
-			style={{
-				transform: transform
-					? `translate3d(${transform.x.toString()}px, ${transform.y.toString()}px, 0)`
-					: undefined,
-			}}
-			{...listeners}
-			{...attributes}
-		>
-			<StatusCircle isOnline={machine.online} className="px-1 h-4 w-fit" />
-			<Attribute
-				name={machine.givenName}
-				link={`machines/${machine.id}`}
-				value={machine.ipAddresses[0]}
-			/>
-		</div>
-	);
-}
-
-interface CardProps {
-	user: UserMachine;
-	magic?: string;
-}
-
-function UserCard({ user, magic }: CardProps) {
-	const { isOver, setNodeRef } = useDroppable({
-		id: user.name,
-	});
-
-	return (
-		<div ref={setNodeRef}>
-			<Card
-				variant="flat"
-				className={cn(
-					'max-w-full w-full overflow-visible h-full',
-					isOver ? 'bg-headplane-100 dark:bg-headplane-800' : '',
-				)}
-			>
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
-					{user.profilePicUrl ? (
-							<div
-								className={cn(
-									"flex-shrink-0 rounded-full",
-									user.email ? "!h-10 !w-10" : "!h-7 !w-7",
-									"flex items-center justify-center",
-									"border border-ui-200 dark:border-ui-700",
-									{
-										"bg-contain bg-center": user.profilePicUrl,
-									},
-								)}
-								style={{
-									backgroundImage: user.profilePicUrl
-										? `url(${user.profilePicUrl})`
-										: "none",
-								}}
-							></div>
-						) : (
-							<PersonIcon className={user.email ? "w-10 h-10" : "w-6 h-6"} />
-						)}
-
-						<div className="text-lg font-mono">
-							<div className="flex flex-col gap-0.2">
-									<span>{user.displayName || user.name}</span>
-								{user.email && <span className="opacity-50 text-sm">{user.email}</span>}
-							</div>
-						</div>
-					</div>
-					<div className="flex items-center gap-2">
-						<RenameUser user={user} />
-						{user.machines.length === 0 ? (
-							<DeleteUser user={user} />
-						) : undefined}
-					</div>
-				</div>
-				<div className="mt-4">
-					{user.machines.map((machine) => (
-						<MachineChip key={machine.id} machine={machine} />
-					))}
-				</div>
-			</Card>
-		</div>
-	);
-}
-
-export function ErrorBoundary() {
-	return <ErrorPopup type="embedded" />;
 }

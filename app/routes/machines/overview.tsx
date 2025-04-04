@@ -1,50 +1,61 @@
 import { InfoIcon } from '@primer/octicons-react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router';
 import { useLoaderData } from 'react-router';
-
 import Code from '~/components/Code';
 import { ErrorPopup } from '~/components/Error';
 import Link from '~/components/Link';
+import Tooltip from '~/components/Tooltip';
+import type { LoadContext } from '~/server';
+import { Capabilities } from '~/server/web/roles';
 import type { Machine, Route, User } from '~/types';
 import cn from '~/utils/cn';
-import { pull } from '~/utils/headscale';
-import { getSession } from '~/utils/sessions.server';
-import { initAgentSocket, queryAgent } from '~/utils/ws-agent';
-
-import Tooltip from '~/components/Tooltip';
-import { hs_getConfig } from '~/utils/config/loader';
-import { noContext } from '~/utils/log';
-import { AppContext } from '~server/context/app';
-import { menuAction } from './action';
-import MachineRow from './components/machine';
+import MachineRow from './components/machine-row';
 import NewMachine from './dialogs/new';
+import { machineAction } from './machine-actions';
 
 export async function loader({
 	request,
 	context,
-}: LoaderFunctionArgs<AppContext>) {
-	const session = await getSession(request.headers.get('Cookie'));
-	const [machines, routes, users] = await Promise.all([
-		pull<{ nodes: Machine[] }>('v1/node', session.get('hsApiKey')!),
-		pull<{ routes: Route[] }>('v1/routes', session.get('hsApiKey')!),
-		pull<{ users: User[] }>('v1/user', session.get('hsApiKey')!),
-	]);
-
-	if (!context) {
-		throw noContext();
+}: LoaderFunctionArgs<LoadContext>) {
+	const session = await context.sessions.auth(request);
+	const user = session.get('user');
+	if (!user) {
+		throw new Error('Missing user session. Please log in again.');
 	}
 
-	initAgentSocket(context);
+	const check = await context.sessions.check(
+		request,
+		Capabilities.read_machines,
+	);
 
-	const stats = await queryAgent(machines.nodes.map((node) => node.nodeKey));
-	const ctx = context.context;
-	const { mode, config } = hs_getConfig();
+	if (!check) {
+		// Not authorized to view this page
+		throw new Error(
+			'You do not have permission to view this page. Please contact your administrator.',
+		);
+	}
+
+	const writablePermission = await context.sessions.check(
+		request,
+		Capabilities.write_machines,
+	);
+
+	const [machines, routes, users] = await Promise.all([
+		context.client.get<{ nodes: Machine[] }>(
+			'v1/node',
+			session.get('api_key')!,
+		),
+		context.client.get<{ routes: Route[] }>(
+			'v1/routes',
+			session.get('api_key')!,
+		),
+		context.client.get<{ users: User[] }>('v1/user', session.get('api_key')!),
+	]);
 
 	let magic: string | undefined;
-
-	if (mode !== 'no') {
-		if (config.dns.magic_dns) {
-			magic = config.dns.base_domain;
+	if (context.hs.readable()) {
+		if (context.hs.c?.dns.magic_dns) {
+			magic = context.hs.c.dns.base_domain;
 		}
 	}
 
@@ -53,14 +64,17 @@ export async function loader({
 		routes: routes.routes,
 		users: users.users,
 		magic,
-		stats,
-		server: ctx.headscale.url,
-		publicServer: ctx.headscale.public_url,
+		server: context.config.headscale.url,
+		publicServer: context.config.headscale.public_url,
+		agents: context.agents?.tailnetIDs(),
+		stats: context.agents?.lookup(machines.nodes.map((node) => node.nodeKey)),
+		writable: writablePermission,
+		subject: user.subject,
 	};
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-	return menuAction(request);
+export async function action(request: ActionFunctionArgs) {
+	return machineAction(request);
 }
 
 export default function Page() {
@@ -84,6 +98,7 @@ export default function Page() {
 				<NewMachine
 					server={data.publicServer ?? data.server}
 					users={data.users}
+					isDisabled={!data.writable}
 				/>
 			</div>
 			<table className="table-auto w-full rounded-lg">
@@ -108,7 +123,10 @@ export default function Page() {
 								) : undefined}
 							</div>
 						</th>
-						{/**<th className="uppercase text-xs font-bold pb-2">Version</th>**/}
+						{/* We only want to show the version column if there are agents */}
+						{data.agents !== undefined ? (
+							<th className="uppercase text-xs font-bold pb-2">Version</th>
+						) : undefined}
 						<th className="uppercase text-xs font-bold pb-2">Last Seen</th>
 					</tr>
 				</thead>
@@ -118,18 +136,37 @@ export default function Page() {
 						'border-t border-headplane-100 dark:border-headplane-800',
 					)}
 				>
-					{data.nodes.map((machine) => (
-						<MachineRow
-							key={machine.id}
-							machine={machine}
-							routes={data.routes.filter(
-								(route) => route.node.id === machine.id,
-							)}
-							users={data.users}
-							magic={data.magic}
-							stats={data.stats?.[machine.nodeKey]}
-						/>
-					))}
+					{data.nodes
+						.sort((a, b) => {
+							const nameA = a.user.email || a.user.displayName || a.user.name;
+							const nameB = b.user.email || b.user.displayName || b.user.name;
+							const ipA = a.ipAddresses[0].split(".")[3];
+							const ipB = b.ipAddresses[0].split(".")[3];
+							
+							const nameComparison = nameA.localeCompare(nameB);
+							if (nameComparison !== 0) {
+								return nameComparison;
+							}
+							return ipA.localeCompare(ipB);
+						})
+						.map((machine) => (
+							<MachineRow
+								key={machine.id}
+								machine={machine}
+								routes={data.routes.filter(
+									(route) => route.node.id === machine.id,
+								)}
+								users={data.users}
+								magic={data.magic}
+								isAgent={data.agents?.includes(machine.id)}
+								stats={data.stats?.[machine.nodeKey]}
+								isDisabled={
+									data.writable
+										? false
+										: machine.user.providerId?.split('/').pop() !== data.subject
+								}
+							/>
+						))}
 				</tbody>
 			</table>
 		</>

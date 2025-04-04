@@ -1,42 +1,31 @@
-export function hp_loadLogger(debug: boolean) {
-	if (debug) {
-		log.debug = (category: string, message: string, ...args: unknown[]) => {
-			defaultLog('DEBG', category, message, ...args);
-		};
-	}
+// MARK: Side-Effects
+// This module contains a side-effect because everything running here
+// is static and logger is later modified in `app/server/index.ts` to
+// disable debug logging if the `HEADPLANE_DEBUG_LOG` specifies as such.
+
+const levels = ['info', 'warn', 'error', 'debug'] as const;
+type Category = 'server' | 'config' | 'agent' | 'api' | 'auth';
+
+export interface Logger
+	extends Record<
+		(typeof levels)[number],
+		(category: Category, message: string, ...args: unknown[]) => void
+	> {
+	debugEnabled: boolean;
 }
 
-const log = {
-	info: (category: string, message: string, ...args: unknown[]) => {
-		defaultLog('INFO', category, message, ...args);
-	},
-
-	warn: (category: string, message: string, ...args: unknown[]) => {
-		defaultLog('WARN', category, message, ...args);
-	},
-
-	error: (category: string, message: string, ...args: unknown[]) => {
-		defaultLog('ERRO', category, message, ...args);
-	},
-
-	// Default to a no-op until the logger is initialized
-	debug: (category: string, message: string, ...args: unknown[]) => {},
-};
-
-function defaultLog(
-	level: string,
-	category: string,
-	message: string,
-	...args: unknown[]
-) {
-	const date = new Date().toISOString();
-	console.log(`${date} (${level}) [${category}] ${message}`, ...args);
-}
-
-export function noContext() {
-	return new Error(
-		'Context is not loaded. This is most likely a configuration error with your reverse proxy.',
-	);
-}
-
-export default log;
+export default {
+	debugEnabled: true,
+	...Object.fromEntries(
+		levels.map((level) => [
+			level,
+			(category: Category, message: string, ...args: unknown[]) => {
+				const date = new Date().toISOString();
+				console.log(
+					`${date} [${category}] ${level.toUpperCase()}: ${message}`,
+					...args,
+				);
+			},
+		]),
+	),
+} as Logger;

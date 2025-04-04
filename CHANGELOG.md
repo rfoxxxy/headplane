@@ -1,3 +1,59 @@
+### 0.5.10 (April 4, 2025)
+- Fix an issue where other prefernences to skip onboarding affected every user.
+
+### 0.5.9 (April 3, 2025)
+- Filter out empty users from the pre-auth keys page which could possibly cause a crash with unmigrated users.
+- OIDC users cannot be renamed, so that functionality has been disabled in the menu options.
+- Suppress hydration errors for any fields with a date in it.
+
+### 0.5.8 (April 3, 2025)
+- You can now skip the onboarding page if desired.
+- Added the UI to change user roles in the dashboard.
+- Fixed an issue where integrations would throw instead of loading properly.
+- Loading the ACL page no longer spams blank updates to the Headscale database (fixes [#151](https://github.com/tale/headplane/issues/151))
+- Automatically create `/var/lib/headplane` in the Docker container (fixes [#166](https://github.com/tale/headplane/issues/166))
+- OIDC logout with `disable_api_key_login` set to true will not automatically login again (fixes [#149](https://github.com/tale/headplane/issues/149))
+
+### 0.5.7 (April 2, 2025)
+- Hotfix an issue where assets aren't served under `/admin` or the prefix.
+
+### 0.5.6 (April 2, 2025)
+
+### IMPORTANT
+> **PLEASE** update to this ASAP if you were using Google OIDC. This is because previously *ANY* accounts have admin access to your Tailnet if they discover the URL that Headplane is being hosted on. This new change enforces that new logins by default are not given any permissions. You will need to re-login to Headplane to generate an owner account and prevent unauthorized access.
+
+Implemented *proper* authentication methods for OIDC.
+This is a large update and copies the permission system from Tailscale.
+Permissions are not automatically derived from OIDC, but they can be configured via the UI.
+Additionally, certain roles give certain capabilities, limiting access to parts of the dashboard.
+By default, new users will have a `member` role which forbids access to the UI.
+If there are no users, the first user will be given an `owner` role which cannot be removed.
+
+**Changes**:
+- Switched the internal server to use `hono` for better performance.
+- Fixed an issue that caused dialogs to randomly refocus every 3 seconds.
+- Headplane will not send API requests when the tab is not focused.
+- Continue loosening the configuration requirements for Headscale (part of an ongoing effort).
+- Unknown values in the Headplane config no longer cause a crash.
+- Fixed an issue that caused copied commands to have a random space (fixes [#161](https://github.com/tale/headplane/issues/161))
+
+### 0.5.5 (March 18, 2025)
+- Hotfix an issue that caused Headplane to crash if no agents are available
+
+### 0.5.4 (March 18, 2025)
+- Fixed a typo in the Kubernetes documentation
+- Handle split and global DNS records not being set in the Headscale config (via [#129](https://github.com/tale/headplane/pull/129))
+- Stop checking for the `mkey:` prefix on machine registration (via [#131](https://github.com/tale/headplane/pull/131))
+- OIDC auth was not using information from the `user_info` endpoint.
+- Support the picture of the user who is logged in via OIDC if available.
+- Rewrote the Agent implementation to better utilize disk space and perform better (coming soon).
+- Loosened checking for the Headscale configuration as it was too strict and required certain optional fields.
+- Deleting a node will now correctly redirect back to the nodes page (fixes [#137](https://github.com/tale/headplane/issues/137))
+- Supports connecting to Headscale via TLS and can accept a certificate file (partially fixes [#82](https://github.com/tale/headplane/issues/82))
+- Add support for running Headplane through Nix, though currently unsupported (via [#132](https://github.com/tale/headplane/pull/132))
+- You can now pass in an OIDC client secret through `oidc.client_secret_path` in the config (fixes [#126](https://github.com/tale/headplane/issues/126))
+- Correctly handle differently localized number inputs (fixes [#125](https://github.com/tale/headplane/issues/125))
+
 ### 0.5.3 (March 1, 2025)
 - Fixed an issue where Headplane expected the incorrect config value for OIDC scope (fixes [#111](https://github.com/tale/headplane/issues/111))
 - Added an ARIA indicator for when an input is required and fixed the confirm buttons (fixed [#116](https://github.com/tale/headplane/issues/116))

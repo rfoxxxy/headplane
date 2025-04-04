@@ -2,5 +2,6 @@ node_modules
 /.react-router
 /.cache
 /build
+/test
 .env
 config.yaml

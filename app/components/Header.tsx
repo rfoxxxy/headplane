@@ -10,12 +10,21 @@ import {
 import type { ReactNode } from 'react';
 import { NavLink, useSubmit } from 'react-router';
 import Menu from '~/components/Menu';
+import { AuthSession } from '~/server/web/sessions';
 import cn from '~/utils/cn';
-import type { SessionData } from '~/utils/sessions.server';
 
 interface Props {
 	configAvailable: boolean;
-	user?: SessionData['user'];
+	onboarding: boolean;
+	user?: AuthSession['user'];
+	access: {
+		ui: boolean;
+		machines: boolean;
+		dns: boolean;
+		users: boolean;
+		policy: boolean;
+		settings: boolean;
+	};
 }
 
 interface LinkProps {
@@ -88,8 +97,19 @@ export default function Header(data: Props) {
 				<div className="flex items-center gap-x-4">
 					{data.user ? (
 						<Menu>
-							<Menu.IconButton label="User">
-								<CircleUser />
+							<Menu.IconButton
+								label="User"
+								className={cn(data.user.picture ? 'p-0' : '')}
+							>
+								{data.user.picture ? (
+									<img
+										src={data.user.picture}
+										alt={data.user.name}
+										className="w-8 h-8 rounded-full"
+									/>
+								) : (
+									<CircleUser />
+								)}
 							</Menu.IconButton>
 							<Menu.Panel
 								onAction={(key) => {
@@ -121,29 +141,49 @@ export default function Header(data: Props) {
 					) : undefined}
 				</div>
 			</div>
-			<nav className="container flex items-center gap-x-4 overflow-x-auto font-semibold">
-				<TabLink
-					to="/machines"
-					name="Machines"
-					icon={<Server className="w-5" />}
-				/>
-				<TabLink to="/users" name="Users" icon={<Users className="w-5" />} />
-				<TabLink
-					to="/acls"
-					name="Access Control"
-					icon={<Lock className="w-5" />}
-				/>
-				{data.configAvailable ? (
-					<>
-						<TabLink to="/dns" name="DNS" icon={<Globe2 className="w-5" />} />
+			{data.access.ui && !data.onboarding ? (
+				<nav className="container flex items-center gap-x-4 overflow-x-auto font-semibold">
+					{data.access.machines ? (
 						<TabLink
-							to="/settings"
-							name="Settings"
-							icon={<Settings className="w-5" />}
+							to="/machines"
+							name="Machines"
+							icon={<Server className="w-5" />}
 						/>
-					</>
-				) : undefined}
-			</nav>
+					) : undefined}
+					{data.access.users ? (
+						<TabLink
+							to="/users"
+							name="Users"
+							icon={<Users className="w-5" />}
+						/>
+					) : undefined}
+					{data.access.policy ? (
+						<TabLink
+							to="/acls"
+							name="Access Control"
+							icon={<Lock className="w-5" />}
+						/>
+					) : undefined}
+					{data.configAvailable ? (
+						<>
+							{data.access.dns ? (
+								<TabLink
+									to="/dns"
+									name="DNS"
+									icon={<Globe2 className="w-5" />}
+								/>
+							) : undefined}
+							{data.access.settings ? (
+								<TabLink
+									to="/settings"
+									name="Settings"
+									icon={<Settings className="w-5" />}
+								/>
+							) : undefined}
+						</>
+					) : undefined}
+				</nav>
+			) : undefined}
 		</header>
 	);
 }

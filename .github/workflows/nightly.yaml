@@ -1,12 +1,21 @@
-name: Publish Nightly Docker Image
+name: Nightly
 on:
   schedule:
-    - cron: '0 8 * * *'
+    - cron: "0 8 * * *"
   workflow_dispatch:
+
+concurrency:
+  group: publish-nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: write # Allow canceling in-progress runs
+  contents: read # Read access to the repository
+  packages: write # Write access to the container registry
 
 jobs:
   publish:
-    name: Build and Publish Nightly
+    name: docker-publish
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo

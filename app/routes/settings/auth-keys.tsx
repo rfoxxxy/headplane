@@ -5,26 +5,48 @@ import { Link as RemixLink } from 'react-router';
 import Link from '~/components/Link';
 import Select from '~/components/Select';
 import TableList from '~/components/TableList';
+import type { LoadContext } from '~/server';
 import type { PreAuthKey, User } from '~/types';
-import { post, pull } from '~/utils/headscale';
-import { noContext } from '~/utils/log';
 import { send } from '~/utils/res';
-import { getSession } from '~/utils/sessions.server';
-import type { AppContext } from '~server/context/app';
 import AuthKeyRow from './components/key';
 import AddPreAuthKey from './dialogs/new';
 
-export async function action({ request }: ActionFunctionArgs) {
-	const session = await getSession(request.headers.get('Cookie'));
-	if (!session.has('hsApiKey')) {
-		return send(
-			{ message: 'Unauthorized' },
-			{
-				status: 401,
-			},
-		);
-	}
+export async function loader({
+	request,
+	context,
+}: LoaderFunctionArgs<LoadContext>) {
+	const session = await context.sessions.auth(request);
+	const users = await context.client.get<{ users: User[] }>(
+		'v1/user',
+		session.get('api_key')!,
+	);
 
+	const preAuthKeys = await Promise.all(
+		users.users
+			.filter((user) => user.name?.length > 0) // Filter out any invalid users
+			.map((user) => {
+				const qp = new URLSearchParams();
+				qp.set('user', user.name);
+
+				return context.client.get<{ preAuthKeys: PreAuthKey[] }>(
+					`v1/preauthkey?${qp.toString()}`,
+					session.get('api_key')!,
+				);
+			}),
+	);
+
+	return {
+		keys: preAuthKeys.flatMap((keys) => keys.preAuthKeys),
+		users: users.users,
+		server: context.config.headscale.public_url ?? context.config.headscale.url,
+	};
+}
+
+export async function action({
+	request,
+	context,
+}: ActionFunctionArgs<LoadContext>) {
+	const session = await context.sessions.auth(request);
 	const data = await request.formData();
 
 	// Expiring a pre-auth key
@@ -41,9 +63,9 @@ export async function action({ request }: ActionFunctionArgs) {
 			);
 		}
 
-		await post<{ preAuthKey: PreAuthKey }>(
+		await context.client.post<{ preAuthKey: PreAuthKey }>(
 			'v1/preauthkey/expire',
-			session.get('hsApiKey')!,
+			session.get('api_key')!,
 			{
 				user: user,
 				key: key,
@@ -75,9 +97,9 @@ export async function action({ request }: ActionFunctionArgs) {
 		const date = new Date();
 		date.setDate(date.getDate() + day);
 
-		const key = await post<{ preAuthKey: PreAuthKey }>(
+		const key = await context.client.post<{ preAuthKey: PreAuthKey }>(
 			'v1/preauthkey',
-			session.get('hsApiKey')!,
+			session.get('api_key')!,
 			{
 				user: user,
 				ephemeral: ephemeral === 'on',
@@ -89,40 +111,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
 		return { message: 'Pre-auth key created', key };
 	}
-}
-
-export async function loader({
-	request,
-	context,
-}: LoaderFunctionArgs<AppContext>) {
-	const session = await getSession(request.headers.get('Cookie'));
-	const users = await pull<{ users: User[] }>(
-		'v1/user',
-		session.get('hsApiKey')!,
-	);
-
-	if (!context) {
-		throw noContext();
-	}
-
-	const ctx = context.context;
-	const preAuthKeys = await Promise.all(
-		users.users.map((user) => {
-			const qp = new URLSearchParams();
-			qp.set('user', user.name);
-
-			return pull<{ preAuthKeys: PreAuthKey[] }>(
-				`v1/preauthkey?${qp.toString()}`,
-				session.get('hsApiKey')!,
-			);
-		}),
-	);
-
-	return {
-		keys: preAuthKeys.flatMap((keys) => keys.preAuthKeys),
-		users: users.users,
-		server: ctx.headscale.public_url ?? ctx.headscale.url,
-	};
 }
 
 export default function Page() {

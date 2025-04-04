@@ -9,35 +9,41 @@ import Chip from '~/components/Chip';
 import Link from '~/components/Link';
 import StatusCircle from '~/components/StatusCircle';
 import Tooltip from '~/components/Tooltip';
+import type { LoadContext } from '~/server';
 import type { Machine, Route, User } from '~/types';
 import cn from '~/utils/cn';
-import { hs_getConfig } from '~/utils/config/loader';
-import { pull } from '~/utils/headscale';
-import { getSession } from '~/utils/sessions.server';
-import { menuAction } from './action';
 import MenuOptions from './components/menu';
 import Routes from './dialogs/routes';
 import { PersonIcon } from '@primer/octicons-react';
+import { machineAction } from './machine-actions';
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
-	const session = await getSession(request.headers.get('Cookie'));
+export async function loader({
+	request,
+	params,
+	context,
+}: LoaderFunctionArgs<LoadContext>) {
+	const session = await context.sessions.auth(request);
 	if (!params.id) {
 		throw new Error('No machine ID provided');
 	}
 
-	const { mode, config } = hs_getConfig();
 	let magic: string | undefined;
-
-	if (mode !== 'no') {
-		if (config.dns.magic_dns) {
-			magic = config.dns.base_domain;
+	if (context.hs.readable()) {
+		if (context.hs.c?.dns.magic_dns) {
+			magic = context.hs.c.dns.base_domain;
 		}
 	}
 
 	const [machine, routes, users] = await Promise.all([
-		pull<{ node: Machine }>(`v1/node/${params.id}`, session.get('hsApiKey')!),
-		pull<{ routes: Route[] }>('v1/routes', session.get('hsApiKey')!),
-		pull<{ users: User[] }>('v1/user', session.get('hsApiKey')!),
+		context.client.get<{ node: Machine }>(
+			`v1/node/${params.id}`,
+			session.get('api_key')!,
+		),
+		context.client.get<{ routes: Route[] }>(
+			'v1/routes',
+			session.get('api_key')!,
+		),
+		context.client.get<{ users: User[] }>('v1/user', session.get('api_key')!),
 	]);
 
 	return {
@@ -45,15 +51,21 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 		routes: routes.routes.filter((route) => route.node.id === params.id),
 		users: users.users,
 		magic,
+		// TODO: Fix agent
+		agent: false,
+		// agent: [...(hp_getSingletonUnsafe('ws_agents') ?? []).keys()].includes(
+		// 	machine.node.id,
+		// ),
 	};
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-	return menuAction(request);
+export async function action(request: ActionFunctionArgs) {
+	return machineAction(request);
 }
 
 export default function Page() {
-	const { machine, magic, routes, users } = useLoaderData<typeof loader>();
+	const { machine, magic, routes, users, agent } =
+		useLoaderData<typeof loader>();
 	const [showRouting, setShowRouting] = useState(false);
 
 	const expired =
@@ -71,6 +83,10 @@ export default function Page() {
 			: false;
 
 	let tags = [...new Set([...machine.forcedTags, ...machine.validTags])];
+
+	if (agent) {
+		tags.unshift('Headplane Agent');
+	}
 
 	// This is much easier with Object.groupBy but it's too new for us
 	const { exit, subnet, subnetApproved } = routes.reduce<{
@@ -183,16 +199,18 @@ export default function Page() {
 							machine.user.name}
 					</div>
 				</div>
-				<div className="p-2 pl-4">
-					<p className="text-sm text-headplane-600 dark:text-headplane-300">
-						Status
-					</p>
-					<div className="flex gap-1 mt-1 mb-8">
-						{tags.map((tag) => (
-							<Chip key={tag} text={tag} />
-						))}
+				{tags.length > 0 ? (
+					<div className="p-2 pl-4">
+						<p className="text-sm text-headplane-600 dark:text-headplane-300">
+							Status
+						</p>
+						<div className="flex gap-1 mt-1 mb-8">
+							{tags.map((tag) => (
+								<Chip key={tag} text={tag} />
+							))}
+						</div>
 					</div>
-				</div>
+				) : undefined}
 			</div>
 			<h2 className="text-xl font-medium mb-4 mt-8">Subnets & Routing</h2>
 			<Routes
@@ -300,14 +318,17 @@ export default function Page() {
 				<Attribute name="ID" value={machine.id} isCopyable />
 				<Attribute isCopyable name="Node Key" value={machine.nodeKey} />
 				<Attribute
+					suppressHydrationWarning
 					name="Created"
 					value={`${new Date(machine.createdAt).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })} at ${new Date(machine.createdAt).toLocaleString(undefined, { hour: "numeric", minute: "numeric", timeZoneName: "short" })}`}
 				/>
 				<Attribute
+					suppressHydrationWarning
 					name="Last Seen"
 					value={`${new Date(machine.lastSeen).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" })} at ${new Date(machine.lastSeen).toLocaleString(undefined, { hour: "numeric", minute: "numeric", timeZoneName: "short" })}`}
 				/>
 				<Attribute
+					suppressHydrationWarning
 					name="Key expiry"
 					value={
 						!expiryDisabled

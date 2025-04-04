@@ -7,6 +7,10 @@ Headplane uses a configuration file to manage its settings
 for a the file at `/etc/headplane/config.yaml`. This can be changed using the
 **`HEADPLANE_CONFIG_PATH`** environment variable to point to a different location.
 
+Headplane also stores stuff in the `/var/lib/headplane` directory by default.
+This can be configured on a per-section basis in the configuration file, but
+it is very important this directory is persistent and writable by Headplane.
+
 ## Environment Variables
 It is also possible to override the configuration file using environment variables.
 These changes get merged *after* the configuration file is loaded, so they will take precedence.
@@ -22,6 +26,9 @@ Here are a few more examples:
 **This functionality is NOT enabled by default!**
 To enable it, set the environment variable **`HEADPLANE_LOAD_ENV_OVERRIDES=true`**.
 Setting this also tells Headplane to load the relative `.env` file into the environment.
+> Also note that this is **only** for configuration overrides, not for general
+> environment variables meaning you cannot specify variables such as
+> `HEADPLANE_DEBUG_LOG=true` or `HEADPLANE_CONFIG_PATH=/etc/headplane/config.yaml`.
 
 ## Debugging
 To enable debug logging, set the **`HEADPLANE_DEBUG_LOG=true`** environment variable.
