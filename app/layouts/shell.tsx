@@ -164,7 +164,6 @@ export default function Shell() {
 					</p>
 				</Card>
 			)}
-			<Footer {...data} />
 		</>
 	);
 }

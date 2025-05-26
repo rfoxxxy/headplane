@@ -4,3 +4,8 @@ node_modules
 /build
 /test
 .env
+config.yaml
+hp_agent
+agent_cache.json
+agent_work
+users.json

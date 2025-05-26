@@ -149,7 +149,7 @@ function MenuItem<T>({ item, state, isDisabled }: MenuItemProps<T>) {
 			ref={ref}
 			className={cn(
 				'py-2 px-3 mx-1 rounded-lg',
-				'focus:outline-none select-none',
+				'focus:outline-none focus:ring-0 select-none',
 				isFocused && 'bg-headplane-100/50 dark:bg-headplane-800',
 				isDisabled
 					? 'text-headplane-400 dark:text-headplane-600'

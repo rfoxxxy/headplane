@@ -60,7 +60,7 @@ function Select(props: SelectProps) {
 			</label>
 			<div
 				className={cn(
-					'flex rounded-xl focus:outline-none focus-within:ring',
+					'flex rounded-xl focus:outline-none focus-within:ring-0',
 					'bg-white dark:bg-headplane-900',
 					'border border-headplane-100 dark:border-headplane-800',
 				)}

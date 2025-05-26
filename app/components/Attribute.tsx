@@ -8,6 +8,7 @@ export interface AttributeProps {
 	value: string;
 	tooltip?: string;
 	isCopyable?: boolean;
+	align?: 'start' | 'center' | 'end';
 }
 
 export default function Attribute({
@@ -15,9 +16,10 @@ export default function Attribute({
 	value,
 	tooltip,
 	isCopyable,
+	align,
 }: AttributeProps) {
 	return (
-		<dl className="flex gap-1 items-center text-sm">
+		<dl className={cn('flex gap-1 text-sm', `items-${align ?? 'center'}`)}>
 			<dt
 				className={cn(
 					'w-1/3 sm:w-1/4 lg:w-1/3 shrink-0 min-w-0',

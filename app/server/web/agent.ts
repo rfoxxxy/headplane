@@ -13,6 +13,7 @@ import { createInterface } from 'node:readline';
 import { setTimeout } from 'node:timers/promises';
 import { type } from 'arktype';
 import { HostInfo } from '~/types';
+import { DERPMap } from '~/types/DERPMap';
 import log from '~/utils/log';
 import type { HeadplaneConfig } from '../config/schema';
 
@@ -31,9 +32,14 @@ interface StatusMessage {
 	Data: Record<string, HostInfo>;
 }
 
+interface DERPMapMessage {
+	Type: 'derp';
+	Data: DERPMap;
+}
+
 interface MessageResponse {
 	Level: 'msg';
-	Message: RegisterMessage | StatusMessage;
+	Message: RegisterMessage | StatusMessage | DERPMapMessage;
 }
 
 type AgentResponse = LogResponse | MessageResponse;
@@ -114,6 +120,7 @@ class AgentManager {
 
 	private spawnProcess: ChildProcess | null;
 	private agentId: string | null;
+	private derpMap: DERPMap | null;
 
 	constructor(
 		cache: TimedCache<HostInfo>,
@@ -125,6 +132,7 @@ class AgentManager {
 		this.headscaleUrl = headscaleUrl;
 		this.spawnProcess = null;
 		this.agentId = null;
+		this.derpMap = null;
 		this.startAgent();
 
 		process.on('SIGINT', () => {
@@ -236,6 +244,9 @@ class AgentManager {
 							}
 
 							break;
+						case 'derp':
+							this.derpMap = parsed.Message.Data;
+							break;
 					}
 
 					return;
@@ -275,6 +286,14 @@ class AgentManager {
 		});
 	}
 
+	async getDERPMap() {
+		if (this.derpMap === null) {
+			await this.requestDERPMap();
+		}
+
+		return this.derpMap;
+	}
+
 	async lookup(nodeIds: string[]) {
 		const entries = this.cache.toJSON();
 		const missing = nodeIds.filter((nodeId) => !entries[nodeId]);
@@ -311,6 +330,21 @@ class AgentManager {
 		// The live data invalidator will re-request the data if it is not
 		// available in the cache anyways.
 		const data = JSON.stringify({ NodeIDs: nodeList });
+		this.spawnProcess.stdin?.write(`${data}\n`);
+	}
+
+	private async requestDERPMap() {
+		if (this.exhausted()) {
+			return;
+		}
+
+		// Wait for the process to be spawned, busy waiting is gross
+		while (this.spawnProcess === null) {
+			await setTimeout(100);
+		}
+
+		// Send the request to the agent, without waiting for a response.
+		const data = JSON.stringify({ Type: 'derp' });
 		this.spawnProcess.stdin?.write(`${data}\n`);
 	}
 }

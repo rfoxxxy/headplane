@@ -13,6 +13,7 @@ import (
 
 // Represents messages from the Headplane master
 type RecvMessage struct {
+	Type    string
 	NodeIDs []string
 }
 
@@ -38,6 +39,21 @@ func FollowMaster(agent *tsnet.TSAgent) {
 		}
 
 		log.Debug("Recieved message from master: %v", line)
+
+		if msg.Type == "derp" {
+			derpMap, err := agent.GetDERPMap()
+			if err != nil {
+				log.Error("Unable to get DERP map: %s", err)
+				continue
+			}
+
+			log.Debug("Sending DERP map back to master: %v", derpMap)
+			log.Msg(&SendMessage{
+				Type: "derp",
+				Data: derpMap,
+			})
+			continue
+		}
 
 		if len(msg.NodeIDs) == 0 {
 			log.Debug("Message recieved had no node IDs")

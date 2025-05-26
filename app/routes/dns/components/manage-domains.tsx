@@ -179,7 +179,7 @@ function Domain({ domain, id, isDragging, isDisabled }: DomainProps) {
 					<GripVertical
 						{...attributes}
 						{...listeners}
-						className="p-0.5 focus:ring outline-none rounded-md"
+						className="p-0.5 focus:ring-0 outline-none rounded-md"
 					/>
 				)}
 				{domain}

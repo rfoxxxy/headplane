@@ -49,7 +49,7 @@ export default function MachineRow({
 			key={node.id}
 			className="group hover:bg-headplane-50 dark:hover:bg-headplane-950"
 		>
-			<td className="pl-0.5 py-2 focus-within:ring">
+			<td className="pl-0.5 py-2 focus-within:ring-0">
 				<Link
 					to={`/machines/${node.id}`}
 					className={cn('group/link h-full focus:outline-none')}
@@ -63,7 +63,10 @@ export default function MachineRow({
 					>
 						{node.givenName}
 					</p>
-					<p className="text-sm opacity-50">{node.user.name}</p>
+					<p className="text-sm font-mono opacity-50">
+						{node.user.email || node.user.displayName || node.user.name} •{' '}
+						{node.name}
+					</p>
 					<div className="flex gap-1 flex-wrap mt-1.5">
 						{mapTagsToComponents(node, uiTags)}
 						{node.validTags.map((tag) => (
@@ -135,7 +138,7 @@ export default function MachineRow({
 					<p suppressHydrationWarning>
 						{node.online && !node.expired
 							? 'Connected'
-							: new Date(node.lastSeen).toLocaleString()}
+							: `${new Date(node.lastSeen).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(node.lastSeen).toLocaleString(undefined, { hour: 'numeric', minute: 'numeric', timeZoneName: 'short' })}`}
 					</p>
 				</span>
 			</td>

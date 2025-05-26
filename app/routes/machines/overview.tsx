@@ -139,20 +139,39 @@ export default function Page() {
 						'border-t border-headplane-100 dark:border-headplane-800',
 					)}
 				>
-					{data.populatedNodes.map((machine) => (
-						<MachineRow
-							key={machine.id}
-							node={machine}
-							users={data.users}
-							magic={data.magic}
-							isAgent={data.agent ? data.agent === machine.nodeKey : undefined}
-							isDisabled={
-								data.writable
-									? false // If the user has write permissions, they can edit all machines
-									: machine.user.providerId?.split('/').pop() !== data.subject
+					{data.populatedNodes
+						.sort((a, b) => {
+							const nameA =
+								a.user.email || a.user.displayName || a.user.name || '';
+							const nameB =
+								b.user.email || b.user.displayName || b.user.name || '';
+
+							const ipA = a.ipAddresses[0]?.split('.').pop() || '0';
+							const ipB = b.ipAddresses[0]?.split('.').pop() || '0';
+
+							const nameComparison = nameA.localeCompare(nameB);
+							if (nameComparison !== 0) {
+								return nameComparison;
 							}
-						/>
-					))}
+
+							return Number(ipA) - Number(ipB);
+						})
+						.map((machine) => (
+							<MachineRow
+								key={machine.id}
+								node={machine}
+								users={data.users}
+								magic={data.magic}
+								isAgent={
+									data.agent ? data.agent === machine.nodeKey : undefined
+								}
+								isDisabled={
+									data.writable
+										? false // If the user has write permissions, they can edit all machines
+										: machine.user.providerId?.split('/').pop() !== data.subject
+								}
+							/>
+						))}
 				</tbody>
 			</table>
 		</>

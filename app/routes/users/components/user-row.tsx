@@ -33,8 +33,12 @@ export default function UserRow({ user, role }: UserRowProps) {
 						<CircleUser className="w-10 h-10" />
 					)}
 					<div className="ml-4">
-						<p className={cn('font-semibold leading-snug')}>{user.name}</p>
-						<p className="text-sm opacity-50">{user.email}</p>
+						<p className={cn('font-semibold leading-snug')}>
+							{user.displayName || user.name}
+						</p>
+						<p className="text-sm opacity-50">
+							{user.email ? `${user.name} • ${user.email}` : user.name}
+						</p>
 					</div>
 				</div>
 			</td>
@@ -46,7 +50,7 @@ export default function UserRow({ user, role }: UserRowProps) {
 					suppressHydrationWarning
 					className="text-sm text-headplane-600 dark:text-headplane-300"
 				>
-					{new Date(user.createdAt).toLocaleDateString()}
+					{`${new Date(user.createdAt).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(user.createdAt).toLocaleString(undefined, { hour: 'numeric', minute: 'numeric', timeZoneName: 'short' })}`}
 				</p>
 			</td>
 			<td className="pl-0.5 py-2">
@@ -58,7 +62,9 @@ export default function UserRow({ user, role }: UserRowProps) {
 				>
 					<StatusCircle isOnline={isOnline} className="w-4 h-4" />
 					<p suppressHydrationWarning>
-						{isOnline ? 'Connected' : new Date(lastSeen).toLocaleString()}
+						{isOnline
+							? 'Connected'
+							: `${new Date(lastSeen).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(lastSeen).toLocaleString(undefined, { hour: 'numeric', minute: 'numeric', timeZoneName: 'short' })}`}
 					</p>
 				</span>
 			</td>

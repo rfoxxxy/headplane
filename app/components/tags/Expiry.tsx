@@ -7,7 +7,7 @@ export interface ExpiryTagProps {
 }
 
 export function ExpiryTag({ variant, expiry }: ExpiryTagProps) {
-	const formatter = new Intl.DateTimeFormat('en-US', {
+	const formatter = new Intl.DateTimeFormat(undefined, {
 		month: 'short',
 		day: 'numeric',
 		year: 'numeric',
@@ -19,7 +19,7 @@ export function ExpiryTag({ variant, expiry }: ExpiryTagProps) {
 				text={
 					variant === 'expired'
 						? `Expired ${formatter.format(new Date(expiry!))}`
-						: 'No expiry'
+						: 'Expiry disabled'
 				}
 				className="bg-headplane-200 text-headplane-800 dark:bg-headplane-800 dark:text-headplane-200"
 			/>

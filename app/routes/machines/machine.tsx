@@ -1,4 +1,10 @@
-import { CheckCircle, CircleSlash, Info, UserCircle } from 'lucide-react';
+import {
+	Check,
+	CheckCircle,
+	CircleSlash,
+	Info,
+	UserCircle,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router';
 import { Link as RemixLink, useLoaderData } from 'react-router';
@@ -46,6 +52,7 @@ export async function loader({
 	]);
 
 	const lookup = await context.agents?.lookup([machine.node.nodeKey]);
+	const derpMap = await context.agents?.getDERPMap();
 	const [node] = mapNodes([machine.node], lookup);
 	const tags = Array.from(
 		new Set([...node.validTags, ...node.forcedTags]),
@@ -58,6 +65,7 @@ export async function loader({
 		magic,
 		agent: context.agents?.agentID(),
 		stats: lookup?.[node.nodeKey],
+		derpMap: derpMap,
 	};
 }
 
@@ -66,7 +74,7 @@ export async function action(request: ActionFunctionArgs) {
 }
 
 export default function Page() {
-	const { node, tags, magic, users, agent, stats } =
+	const { node, tags, magic, users, agent, stats, derpMap } =
 		useLoaderData<typeof loader>();
 	const [showRouting, setShowRouting] = useState(false);
 
@@ -108,8 +116,23 @@ export default function Page() {
 						</Tooltip>
 					</span>
 					<div className="flex items-center gap-x-2.5 mt-1">
-						<UserCircle />
-						{node.user.name}
+						<div
+							className={cn(
+								'rounded-full h-7 w-7 flex items-center justify-center',
+								'border border-ui-200 dark:border-ui-700',
+								{
+									'bg-contain': node.user.profilePicUrl,
+								},
+							)}
+							style={{
+								backgroundImage: node.user.profilePicUrl
+									? `url(${node.user.profilePicUrl})`
+									: 'none',
+							}}
+						>
+							{!node.user.profilePicUrl && <UserCircle className="w-7 h-7" />}
+						</div>
+						{node.user.email || node.user.displayName || node.user.name}
 					</div>
 				</div>
 				<div className="p-2 pl-4">
@@ -166,15 +189,6 @@ export default function Page() {
 							</ul>
 						)}
 					</div>
-					<Button
-						onPress={() => setShowRouting(true)}
-						className={cn(
-							'px-1.5 py-0.5 rounded-md mt-1.5',
-							'text-blue-500 dark:text-blue-400',
-						)}
-					>
-						Edit
-					</Button>
 				</div>
 				<div>
 					<span className="text-headplane-600 dark:text-headplane-300 flex items-center gap-x-1">
@@ -198,15 +212,6 @@ export default function Page() {
 							</ul>
 						)}
 					</div>
-					<Button
-						onPress={() => setShowRouting(true)}
-						className={cn(
-							'px-1.5 py-0.5 rounded-md mt-1.5',
-							'text-blue-500 dark:text-blue-400',
-						)}
-					>
-						Edit
-					</Button>
 				</div>
 				<div>
 					<span className="text-headplane-600 dark:text-headplane-300 flex items-center gap-x-1">
@@ -233,15 +238,6 @@ export default function Page() {
 							</span>
 						)}
 					</div>
-					<Button
-						onPress={() => setShowRouting(true)}
-						className={cn(
-							'px-1.5 py-0.5 rounded-md mt-1.5',
-							'text-blue-500 dark:text-blue-400',
-						)}
-					>
-						Edit
-					</Button>
 				</div>
 			</Card>
 			<h2 className="text-xl font-medium">Machine Details</h2>
@@ -255,7 +251,7 @@ export default function Page() {
 			>
 				<div className="flex flex-col gap-1">
 					<Attribute name="Creator" value={node.user.name} />
-					<Attribute name="Machine name" value={node.givenName} />
+					<Attribute name="Machine name" value={node.givenName} isCopyable />
 					<Attribute
 						tooltip="OS hostname is published by the machine’s operating system and is used as the default name for the machine."
 						name="OS hostname"
@@ -271,6 +267,7 @@ export default function Page() {
 						tooltip="ID for this machine. Used in the Headscale API."
 						name="ID"
 						value={node.id}
+						isCopyable
 					/>
 					<Attribute
 						isCopyable
@@ -280,22 +277,22 @@ export default function Page() {
 					/>
 					<Attribute
 						name="Created"
-						value={new Date(node.createdAt).toLocaleString()}
+						value={`${new Date(node.createdAt).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(node.createdAt).toLocaleString(undefined, { hour: 'numeric', minute: 'numeric', timeZoneName: 'short' })}`}
 					/>
 					<Attribute
 						name="Last Seen"
 						value={
 							node.online
 								? 'Connected'
-								: new Date(node.lastSeen).toLocaleString()
+								: `${new Date(node.lastSeen).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(node.lastSeen).toLocaleString(undefined, { hour: 'numeric', minute: 'numeric', timeZoneName: 'short' })}`
 						}
 					/>
 					<Attribute
 						name="Key expiry"
 						value={
 							node.expiry !== null
-								? new Date(node.expiry).toLocaleString()
-								: 'Never'
+								? `${new Date(node.expiry).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} at ${new Date(node.expiry).toLocaleString(undefined, { hour: 'numeric', minute: 'numeric', timeZoneName: 'short' })}`
+								: 'No expiry'
 						}
 					/>
 					{magic ? (
@@ -304,6 +301,66 @@ export default function Page() {
 							name="Domain"
 							value={`${node.givenName}.${magic}`}
 						/>
+					) : undefined}
+					{stats && derpMap ? (
+						<>
+							{stats?.NetInfo?.DERPLatency && (
+								<>
+									<p className="uppercase text-sm font-semibold opacity-75 mt-3">
+										Relays
+									</p>
+									<Attribute
+										tooltip="Latency from Tailscale relay (DERP) servers, used when machines cannot connect peer-to-peer. Checkmark indicates preferred relays."
+										name="Latency"
+										value={
+											Object.entries(stats.NetInfo?.DERPLatency)
+												.filter(
+													([key]) =>
+														derpMap?.Regions[Number(key.split('-')[0])],
+												)
+												.filter(
+													([key, value], index, self) =>
+														self.findIndex(
+															(t) => t[0].split('-')[0] === key.split('-')[0],
+														) === index,
+												)
+												.sort((a, b) => a[1] - b[1])
+												.map(([key, value]) => (
+													<>
+														<div
+															key={key}
+															className="flex items-center gap-x-1"
+														>
+															<b>
+																{
+																	derpMap?.Regions[Number(key.split('-')[0])]
+																		?.RegionName
+																}
+																:
+															</b>{' '}
+															{
+																+(
+																	Math.round(
+																		`${value * 1000}e+2` as unknown as number,
+																	) + 'e-2'
+																)
+															}
+															ms{' '}
+															{Number(key.split('-')[0]).toString() ===
+															stats.NetInfo?.PreferredDERP?.toString() ? (
+																<Check className="w-3.5 h-3.5 text-white" />
+															) : (
+																''
+															)}
+														</div>
+													</>
+												)) as unknown as string
+										}
+										align="start"
+									/>
+								</>
+							)}
+						</>
 					) : undefined}
 				</div>
 				<div className="flex flex-col gap-1">

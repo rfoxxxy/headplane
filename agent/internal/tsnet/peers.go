@@ -13,6 +13,11 @@ import (
 	"go4.org/mem"
 )
 
+// Returns the current DERP map.
+func (s *TSAgent) GetDERPMap() (*tailcfg.DERPMap, error) {
+	return s.Lc.CurrentDERPMap(context.Background())
+}
+
 // Returns the raw hostinfo for a peer based on node ID.
 func (s *TSAgent) GetStatusForPeer(id string) (*tailcfg.HostinfoView, error) {
 	log := util.GetLogger()
