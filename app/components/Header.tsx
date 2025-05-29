@@ -2,11 +2,7 @@ import {
 	CircleUser,
 	Globe2,
 	Lock,
-<<<<<<< HEAD
 	LogOut,
-	PlaneTakeoff,
-=======
->>>>>>> e36193a (feat: add logo and favicon (#238))
 	Server,
 	Settings,
 	Users,
@@ -55,7 +51,7 @@ function TabLink({ name, to, icon }: TabLinkProps) {
 						'after:absolute after:bottom-0 after:left-3 after:right-3',
 						'after:h-0.5 after:bg-headplane-900 dark:after:bg-headplane-200',
 						'hover:bg-headplane-200 dark:hover:bg-headplane-900',
-						'focus:outline-none focus:ring-0',
+						'focus:outline-hidden focus:ring-0',
 						isActive ? 'after:visible' : 'after:invisible',
 					)
 				}
@@ -74,7 +70,7 @@ function Link({ href, text }: LinkProps) {
 			rel="noreferrer"
 			className={cn(
 				'hidden sm:block hover:underline text-sm',
-				'focus:outline-none focus:ring-0 rounded-md',
+				'focus:outline-hidden focus:ring-0 rounded-md',
 			)}
 		>
 			{text}

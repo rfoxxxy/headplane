@@ -20,7 +20,7 @@ export default function Button({ variant = 'light', ...props }: ButtonProps) {
 			{...buttonProps}
 			className={cn(
 				'w-fit text-sm rounded-xl px-3 py-2',
-				'focus:outline-none focus:ring-0',
+				'focus:outline-hidden focus:ring-0',
 				props.isDisabled && 'opacity-60 cursor-not-allowed',
 				...(variant === 'heavy'
 					? [
