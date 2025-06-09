@@ -40,6 +40,7 @@ function formatOS(os?: string, makeCapital?: boolean) {
 	switch (os) {
 		case 'macOS':
 		case 'iOS':
+		case 'tvOS':
 			return os;
 		case 'windows':
 			return 'Windows';
