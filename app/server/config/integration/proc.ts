@@ -61,40 +61,12 @@ export default class ProcIntegration extends Integration<T> {
 
 			log.debug('config', 'Found Headscale processes: %o', pids);
 			if (pids.length > 1) {
-				log.warn(
+				log.error(
 					'config',
 					'Found %d Headscale processes: %s',
 					pids.length,
 					pids.join(', '),
 				);
-				log.debug(
-					'config',
-					'Checking if any of them have Parent PID = 1, assuming thats the correct PID',
-				);
-				const ppidRegex = /(?:PPid:\s)(\d+)(?:\n?)/;
-				for (const pid of pids) {
-					const pidStatusPath = join('/proc', pid.toString(), 'status');
-					try {
-						log.debug('config', 'Reading %s', pidStatusPath);
-						const pidData = await readFile(pidStatusPath, 'utf8');
-						const ppidResult = pidData.match(ppidRegex);
-
-						if (ppidResult !== null) {
-							const potentialPPid = Number.parseInt(ppidResult[1], 10);
-							if (potentialPPid === 1) {
-								this.pid = pid;
-								log.info(
-									'config',
-									'Found potential Headscale process with PID: %d based on Parent PID = 1',
-									this.pid,
-								);
-								return true;
-							}
-						}
-					} catch (error) {
-						log.error('config', 'Failed to read %s: %s', pidStatusPath, error);
-					}
-				}
 				return false;
 			}
 
