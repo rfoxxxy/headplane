@@ -158,7 +158,7 @@ export default function Page() {
 						})
 						.map((machine) => (
 							<MachineRow
-								key={machine.nodeKey}
+								key={machine.id || ''}
 								node={machine}
 								users={data.users}
 								magic={data.magic}
